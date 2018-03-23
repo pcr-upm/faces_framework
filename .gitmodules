@@ -1,0 +1,27 @@
+[submodule "detection/dalal_cvpr05"]
+	path = detection/dalal_cvpr05
+	url = git@github.com:bobetocalo/dalal_cvpr05.git
+[submodule "detection/liu_eccv16"]
+	path = detection/liu_eccv16
+	url = git@github.com:bobetocalo/liu_eccv16.git
+[submodule "headpose/bobetocalo_amdo16"]
+	path = headpose/bobetocalo_amdo16
+	url = git@github.com:bobetocalo/bobetocalo_amdo16.git
+[submodule "headpose/bobetocalo_ciarp17"]
+	path = headpose/bobetocalo_ciarp17
+	url = git@github.com:bobetocalo/bobetocalo_ciarp17.git
+[submodule "alignment/dantone_cvpr12"]
+	path = alignment/dantone_cvpr12
+	url = git@github.com:bobetocalo/dantone_cvpr12.git
+[submodule "alignment/kazemi_cvpr14"]
+	path = alignment/kazemi_cvpr14
+	url = git@github.com:bobetocalo/kazemi_cvpr14.git
+[submodule "alignment/bobetocalo_ert"]
+	path = alignment/bobetocalo_ert
+	url = git@github.com:bobetocalo/bobetocalo_ert.git
+[submodule "alignment/cascade"]
+	path = alignment/cascade
+	url = git@github.com:bobetocalo/cascade.git
+[submodule "alignment/honari_cvpr16"]
+	path = alignment/honari_cvpr16
+	url = git@github.com:bobetocalo/honari_cvpr16.git

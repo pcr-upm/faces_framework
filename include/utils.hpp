@@ -23,8 +23,8 @@
 namespace upm {
 
 static const std::vector<float> HP_LABELS = {-90, -75, -60, -45, -30, -15, 0, 15, 30, 45, 60, 75, 90};
-//static const std::vector<float> HP_LABELS = {-90, -20, 0, 20, 90};
 extern std::map< FacePartLabel,std::vector<int> > DB_PARTS;
+extern std::vector<unsigned int> DB_LANDMARKS;
 
 double
 processFrame

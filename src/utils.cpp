@@ -18,6 +18,7 @@
 namespace upm {
 
 std::map< FacePartLabel,std::vector<int> > DB_PARTS;
+std::vector<unsigned int> DB_LANDMARKS;
 
 // -----------------------------------------------------------------------------
 //
@@ -187,9 +188,7 @@ setPointsToComputeProjectionMatrix
   // Load 3D mean face coordinates
   MeanFace3DModel mean_face_3D;
   std::vector<int> db_landmarks;
-  unsigned int num_landmarks = 0;
-  for (const std::pair<upm::FacePartLabel,std::vector<int>> &part : DB_PARTS)
-    num_landmarks += part.second.size();
+  unsigned int num_landmarks = static_cast<int>(DB_LANDMARKS.size());
   switch (num_landmarks)
   {
     case 21: {
@@ -211,7 +210,7 @@ setPointsToComputeProjectionMatrix
   for (const FacePart &ann_part : ann.parts)
     for (const FaceLandmark &ann_landmark : ann_part.landmarks)
     {
-      std::vector<int>::iterator pos = std::find(db_landmarks.begin(),db_landmarks.end(),ann_landmark.feature_idx);
+      auto pos = std::find(db_landmarks.begin(),db_landmarks.end(),ann_landmark.feature_idx);
       if (pos == db_landmarks.end())
         continue;
       image_pts.push_back(ann_landmark.pos);

@@ -1,9 +1,11 @@
-/*
- * ModernPosit.h
- *
- *  Created on: 22.10.2010
- *      Author: pwohlhart
- */
+/** ****************************************************************************
+ *  @file    ModernPosit.h
+ *  @brief   Face detection and recognition framework
+ *  @author  Roberto Valle Fernandez
+ *  @date    2018/06
+ *  @copyright All rights reserved.
+ *  Software developed by UPM PCR Group: http://www.dia.fi.upm.es/~pcr
+ ******************************************************************************/
 
 #ifndef MODERN_POSIT_H
 #define MODERN_POSIT_H
@@ -38,7 +40,7 @@ public:
   static cv::Vec3d
   getEulerAngles
     (
-    cv::Mat &rot_matrix
+    cv::Mat &matrix
     );
 };
 

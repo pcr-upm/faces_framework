@@ -10,7 +10,6 @@
 // ----------------------- INCLUDES --------------------------------------------
 #include <utils.hpp>
 #include <trace.hpp>
-#include <MeanFace3DModel.hpp>
 #include <ModernPosit.h>
 #include <iomanip>
 #include <boost/algorithm/cxx11/iota.hpp>
@@ -176,58 +175,6 @@ getBbox
 // Restrictions and Caveats:
 //
 // -----------------------------------------------------------------------------
-void
-setPointsToComputeProjectionMatrix
-  (
-  const std::string &path,
-  const FaceAnnotation &ann,
-  std::vector<cv::Point2f> &image_pts,
-  std::vector<cv::Point3f> &world_pts
-  )
-{
-  // Load 3D mean face coordinates
-  MeanFace3DModel mean_face_3D;
-  std::vector<int> db_landmarks;
-  unsigned int num_landmarks = static_cast<int>(DB_LANDMARKS.size());
-  switch (num_landmarks)
-  {
-    case 21: {
-      mean_face_3D.load(path + "mean_face_3D_21.txt");
-      db_landmarks = {1, 2, 3, 4, 5, 6, 7, 101, 8, 11, 102, 12, 15, 16, 17, 18, 19, 20, 103, 21, 24};
-      break;
-    }
-    case 29: {
-      mean_face_3D.load(path + "mean_face_3D_29.txt");
-      db_landmarks = {1, 101, 3, 102, 4, 103, 6, 104, 7, 8, 9, 10, 105, 11, 12, 13, 14, 106, 17, 16, 107, 18, 20, 22, 21, 23, 108, 109, 24};
-      break;
-    }
-    default: {
-      mean_face_3D.load(path + "mean_face_3D_68.txt");
-      db_landmarks = {101, 102, 103, 104, 105, 106, 107, 108, 24, 110, 111, 112, 113, 114, 115, 116, 117, 7, 138, 139, 8, 141, 142, 11, 144, 145, 12, 147, 148, 1, 119, 2, 121, 3, 128, 129, 130, 17, 16, 133, 134, 135, 18, 4, 124, 5, 126, 6, 20, 150, 151, 22, 153, 154, 21, 156, 157, 23, 159, 160, 161, 162, 163, 164, 165, 166, 167, 168};
-      break;
-    }
-  }
-  for (const FacePart &ann_part : ann.parts)
-    for (const FaceLandmark &ann_landmark : ann_part.landmarks)
-    {
-      auto pos = std::find(db_landmarks.begin(),db_landmarks.end(),ann_landmark.feature_idx);
-      if (pos == db_landmarks.end())
-        continue;
-      image_pts.push_back(ann_landmark.pos);
-      cv::Point3f aux = mean_face_3D.getCoordinatesById(static_cast<int>(std::distance(db_landmarks.begin(),pos))+1);
-      world_pts.push_back(cv::Point3f(aux.z,-aux.x,-aux.y));
-    }
-};
-
-// -----------------------------------------------------------------------------
-//
-// Purpose and Method:
-// Inputs:
-// Outputs:
-// Dependencies:
-// Restrictions and Caveats:
-//
-// -----------------------------------------------------------------------------
 cv::Point3f
 getHeadpose
   (
@@ -237,21 +184,22 @@ getHeadpose
   // Default annotation or modern POSIT feature-based algorithm
   if (ann.headpose == upm::FaceAnnotation().headpose)
   {
+    const unsigned int num_landmarks = static_cast<int>(DB_LANDMARKS.size());
+    std::vector<cv::Point3f> world_pts, world_all;
     std::vector<cv::Point2f> image_pts;
-    std::vector<cv::Point3f> world_pts;
-    setPointsToComputeProjectionMatrix("faces_framework/headpose/posit/data/", ann, image_pts, world_pts);
+    ModernPosit::setCorrespondences("faces_framework/headpose/posit/data/", ann, num_landmarks, world_all, world_pts, image_pts);
 
     // Intrinsic parameters (image -> camera)
     cv::Mat img = cv::imread(ann.filename);
     double focal_length = static_cast<double>(img.cols) * 1.5;
     cv::Point2f img_center = cv::Point2f(img.cols, img.rows) * 0.5f;
-    cv::Mat cam_matrix = (cv::Mat_<float>(3,3) << focal_length,0,img_center.x, 0,focal_length,img_center.y, 0,0,1);
+    cv::Mat cam_matrix;
+    cam_matrix = (cv::Mat_<float>(3,3) << focal_length,0,img_center.x, 0,focal_length,img_center.y, 0,0,1);
     // Extrinsic parameters (camera -> 3D world)
-    ModernPosit modernPosit;
-    cv::Mat rot_matrix = modernPosit.run(world_pts, image_pts, cam_matrix, 100);
-//    std::cout << rot_matrix << std::endl;
-//    cv::Mat rvec, tvec = (cv::Mat_<float>(3,1) << rot_matrix.at<float>(0,3),rot_matrix.at<float>(1,3),rot_matrix.at<float>(2,3));
-//    cv::Rodrigues(rot_matrix.colRange(0,3), rvec);
+    cv::Mat rot_matrix, trl_matrix;
+    ModernPosit::run(world_pts, image_pts, cam_matrix, 100, rot_matrix, trl_matrix);
+//    cv::Mat rot_matrix1 = (cv::Mat_<float>(3,4) << rot_matrix.at<float>(0,0),rot_matrix.at<float>(0,1),rot_matrix.at<float>(0,2),trl_matrix.at<float>(0), rot_matrix.at<float>(1,0),rot_matrix.at<float>(1,1),rot_matrix.at<float>(1,2),trl_matrix.at<float>(1), rot_matrix.at<float>(2,0),rot_matrix.at<float>(2,1),rot_matrix.at<float>(2,2),trl_matrix.at<float>(2));
+//    std::cout << rot_matrix1 << std::endl;
 //    cv::Mat rmat2, rvec2, tvec2;
 //    cv::solvePnP(world_pts, image_pts, cam_matrix, cv::Mat(), rvec2, tvec2, false, cv::SOLVEPNP_ITERATIVE);
 //    cv::Rodrigues(rvec2, rmat2);
@@ -263,27 +211,8 @@ getHeadpose
 //    cv::Mat rot_matrix3 = (cv::Mat_<float>(3,4) << rmat3.at<float>(0,0),rmat3.at<float>(0,1),rmat3.at<float>(0,2),tvec3.at<float>(0), rmat3.at<float>(1,0),rmat3.at<float>(1,1),rmat3.at<float>(1,2),tvec3.at<float>(1), rmat3.at<float>(2,0),rmat3.at<float>(2,1),rmat3.at<float>(2,2),tvec3.at<float>(2));
 //    std::cout << rot_matrix3 << std::endl;
 
-//    std::vector<cv::Point2f> image_pts_proj1, image_pts_proj2, image_pts_proj3;
-//    cv::projectPoints(world_pts, rvec, tvec, cam_matrix, cv::Mat(), image_pts_proj1);
-//    cv::projectPoints(world_pts, rvec2, tvec2, cam_matrix, cv::Mat(), image_pts_proj2);
-//    cv::projectPoints(world_pts, rvec3, tvec3, cam_matrix, cv::Mat(), image_pts_proj3);
-//    cv::Mat copy = img.clone();
-//    for (int w=0; w < image_pts.size(); w++)
-//    {
-//      cv::circle(copy, cv::Point2f(image_pts[w].x,image_pts[w].y), 3, cv::Scalar(255,0,0), -1);
-//      cv::circle(copy, cv::Point2f(image_pts_proj1[w].x,image_pts_proj1[w].y), 3, cv::Scalar(0,255,0), -1);
-//      cv::circle(copy, cv::Point2f(image_pts_proj2[w].x,image_pts_proj2[w].y), 3, cv::Scalar(255,255,0), -1);
-//      cv::circle(copy, cv::Point2f(image_pts_proj3[w].x,image_pts_proj3[w].y), 3, cv::Scalar(0,0,255), -1);
-//    }
-//    cv::imshow("posit", copy);
-//    cv::waitKey(0);
-//    std::cout << cv::Mat(image_pts) << std::endl;
-//    std::cout << cv::Mat(image_pts_proj1) << std::endl;
-//    std::cout << cv::Mat(image_pts_proj2) << std::endl;
-//    std::cout << cv::Mat(image_pts_proj3) << std::endl;
-
     // Decomposition of a rotation matrix into three Euler angles
-    cv::Vec3d euler = modernPosit.getEulerAngles(rot_matrix);
+    cv::Vec3d euler = ModernPosit::getEulerAngles(rot_matrix, trl_matrix);
     return cv::Point3f(static_cast<float>(euler(0)), static_cast<float>(euler(1)), static_cast<float>(euler(2)));
   }
   return ann.headpose;

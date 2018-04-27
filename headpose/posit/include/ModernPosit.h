@@ -10,6 +10,7 @@
 #ifndef MODERN_POSIT_H
 #define MODERN_POSIT_H
 
+#include <FaceAnnotation.hpp>
 #include <vector>
 #include <opencv2/opencv.hpp>
 
@@ -28,19 +29,34 @@ public:
   virtual
   ~ModernPosit() {};
 
-  static cv::Mat
+  static void
+  setCorrespondences
+    (
+    const std::string &path,
+    const upm::FaceAnnotation &ann,
+    const unsigned int &num_landmarks,
+    std::vector<cv::Point3f> &world_all,
+    std::vector<cv::Point3f> &world_pts,
+    std::vector<cv::Point2f> &image_pts,
+    const std::vector<int> &mask = {}
+    );
+
+  static void
   run
     (
     const std::vector<cv::Point3f> &world_pts,
     const std::vector<cv::Point2f> &image_pts,
     const cv::Mat &cam_matrix,
-    int max_iters = 100
+    const int &max_iters,
+    cv::Mat &rot_matrix,
+    cv::Mat &trl_matrix
     );
 
   static cv::Vec3d
   getEulerAngles
     (
-    cv::Mat &matrix
+    const cv::Mat &rot_matrix,
+    const cv::Mat &trl_matrix
     );
 };
 

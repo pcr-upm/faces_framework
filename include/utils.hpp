@@ -66,15 +66,6 @@ getBbox
   const FaceAnnotation &ann
   );
 
-void
-setPointsToComputeProjectionMatrix
-  (
-  const std::string &path,
-  const FaceAnnotation &ann,
-  std::vector<cv::Point2f> &image_pts,
-  std::vector<cv::Point3f> &world_pts
-  );
-
 cv::Point3f
 getHeadpose
   (

@@ -38,7 +38,7 @@ public:
     std::vector<cv::Point3f> &world_all,
     std::vector<cv::Point3f> &world_pts,
     std::vector<cv::Point2f> &image_pts,
-    const std::vector<int> &mask = {}
+    const std::vector<unsigned int> &mask = {}
     );
 
   static void

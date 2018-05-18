@@ -28,10 +28,10 @@ getEulerRotation
   )
 {
   cv::Point3f rad = headpose*M_PI/180.0f;
-  cv::Mat Rz = (cv::Mat_<float>(3,3) << cosf(rad.z), -sinf(rad.z), 0.0f, sinf(rad.z), cosf(rad.z), 0.0f, 0.0f, 0.0f, 1.0f); // roll
-  cv::Mat Ry = (cv::Mat_<float>(3,3) << cosf(rad.y), 0.0f, sinf(rad.y), 0.0f, 1.0f, 0.0f, -sinf(rad.y), 0.0f, cosf(rad.y)); // pitch
   cv::Mat Rx = (cv::Mat_<float>(3,3) << 1.0f, 0.0f, 0.0f, 0.0f, cosf(rad.x), sinf(rad.x), 0.0f, -sinf(rad.x), cosf(rad.x)); // yaw
-  return Rz*Ry*Rx;
+  cv::Mat Ry = (cv::Mat_<float>(3,3) << cosf(rad.y), 0.0f, sinf(rad.y), 0.0f, 1.0f, 0.0f, -sinf(rad.y), 0.0f, cosf(rad.y)); // pitch
+  cv::Mat Rz = (cv::Mat_<float>(3,3) << cosf(rad.z), -sinf(rad.z), 0.0f, sinf(rad.z), cosf(rad.z), 0.0f, 0.0f, 0.0f, 1.0f); // roll
+  return Rx*Ry*Rz;
 };
 
 // -----------------------------------------------------------------------------

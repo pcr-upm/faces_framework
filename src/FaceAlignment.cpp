@@ -117,9 +117,22 @@ FaceAlignment::evaluate
   for (const FaceAnnotation &face : faces)
   {
     *output << getComponentClass() << " " << ann.filename;
-    for (const FacePart &part : face.parts)
-      for (const FaceLandmark &landmark : part.landmarks)
-        landmark.visible ? landmark.visible ? tn++ : fn++ : landmark.visible ? fp++ : tp++;
+    for (const FacePart &face_part : face.parts)
+      for (const FaceLandmark &face_landmark : face_part.landmarks)
+      {
+        unsigned int idx = face_landmark.feature_idx;
+        bool is_visible = false;
+        for (const FacePart &ann_part : ann.parts)
+        {
+          auto found = std::find_if(ann_part.landmarks.begin(), ann_part.landmarks.end(), [&idx](const FaceLandmark &obj){return obj.feature_idx == idx;});
+          if (found != ann_part.landmarks.end())
+          {
+            is_visible = (*found).visible;
+            break;
+          }
+        }
+        not face_landmark.visible ? not is_visible ? tp++ : fp++ : not is_visible ? fn++ : tn++;
+      }
     *output << " " << tp << " " << fp << " " << fn << " " << tn;
     std::vector<unsigned int> indices;
     std::vector<float> errors;

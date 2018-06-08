@@ -28,7 +28,7 @@ namespace upm {
 class FaceHeadPose : public FaceComponent
 {
 public:
-  FaceHeadPose() : FaceComponent(1) {};
+  FaceHeadPose() : FaceComponent(2) {};
 
   virtual
   ~FaceHeadPose() {};

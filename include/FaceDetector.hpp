@@ -28,8 +28,7 @@ namespace upm {
 class FaceDetector : public FaceComponent
 {
 public:
-  FaceDetector
-    () : FaceComponent(0) {};
+  FaceDetector() : FaceComponent(1) {};
 
   virtual
   ~FaceDetector() {};

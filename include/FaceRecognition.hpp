@@ -28,7 +28,7 @@ namespace upm {
 class FaceRecognition : public FaceComponent
 {
 public:
-  FaceRecognition() : FaceComponent(3) {};
+  FaceRecognition() : FaceComponent(4) {};
 
   virtual
   ~FaceRecognition() {};

@@ -30,7 +30,7 @@ enum class ErrorMeasure { pupils, corners, height };
 class FaceAlignment : public FaceComponent
 {
 public:
-  FaceAlignment() : FaceComponent(2) {};
+  FaceAlignment() : FaceComponent(3) {};
 
   virtual
   ~FaceAlignment() {};

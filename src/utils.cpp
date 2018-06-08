@@ -182,7 +182,7 @@ getHeadpose
   )
 {
   /// Default annotation or modern POSIT feature-based algorithm
-  if (ann.headpose == upm::FaceAnnotation().headpose)
+  if ((ann.headpose == upm::FaceAnnotation().headpose) and (ann.parts != upm::FaceAnnotation().parts))
   {
     const unsigned int num_landmarks = static_cast<int>(DB_LANDMARKS.size());
     std::vector<cv::Point3f> world_pts, world_all;

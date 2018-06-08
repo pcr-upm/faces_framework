@@ -125,7 +125,7 @@ FaceHeadPose::save
   )
 {
   // Save images with mean error greater than threshold
-  const float threshold = 35.0f;
+  const float threshold = 25.0f;
   cv::Scalar blue_color(255,0,0), green_color(0,255,0), red_color(0,0,255), cyan_color(122,0,0), lime_color(0,122,0), salmon_color(0,0,122);
   double length = static_cast<int>(roundf(ann.bbox.pos.height)*0.5f);
   int thickness = MAX(static_cast<int>(roundf(ann.bbox.pos.height*0.01f)), 3);

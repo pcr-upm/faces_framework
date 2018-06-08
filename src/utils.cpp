@@ -90,14 +90,14 @@ intersection
   const cv::Rect_<float> r2
   )
 {
-  // Find overlapping region
+  /// Find overlapping region
   cv::Rect_<float> intersect;
   intersect.x = std::max(r1.x, r2.x);
   intersect.y = std::max(r1.y, r2.y);
   intersect.width  = std::min(r1.x+r1.width, r2.x+r2.width) - intersect.x;
   intersect.height = std::min(r1.y+r1.height, r2.y+r2.height) - intersect.y;
 
-  // Check for non-overlapping regions
+  /// Check for non-overlapping regions
   if (intersect.width <= 0.0f or intersect.height <= 0.0f)
     intersect = cv::Rect_<float>(0.0f, 0.0f, 0.0f, 0.0f);
 
@@ -121,7 +121,7 @@ getHeadposeIdx
 {
   cv::Mat diff = cv::abs(cv::Mat(HP_LABELS)-label);
   float minimum = *std::min_element(diff.begin<float>(), diff.end<float>());
-  // In case of draw use lower angle interval (i.e. if [0, 30] are 15 then 0)
+  /// In case of draw use lower angle interval (i.e. if [0, 30] are 15 then 0)
   const int num_headposes = static_cast<int>(HP_LABELS.size());
   const int half = (num_headposes-1) / 2;
   std::vector<int> indices(num_headposes);
@@ -154,7 +154,7 @@ getBbox
   const FaceAnnotation &ann
   )
 {
-  // Default annotation or smallest feature-based bounding box enclosing
+  /// Default annotation or smallest feature-based bounding box enclosing
   if (ann.bbox.pos == upm::FaceAnnotation().bbox.pos)
   {
     std::vector<cv::Point2f> points;
@@ -181,7 +181,7 @@ getHeadpose
   const FaceAnnotation &ann
   )
 {
-  // Default annotation or modern POSIT feature-based algorithm
+  /// Default annotation or modern POSIT feature-based algorithm
   if (ann.headpose == upm::FaceAnnotation().headpose)
   {
     const unsigned int num_landmarks = static_cast<int>(DB_LANDMARKS.size());
@@ -189,13 +189,17 @@ getHeadpose
     std::vector<cv::Point2f> image_pts;
     ModernPosit::setCorrespondences("faces_framework/headpose/posit/data/", ann, num_landmarks, world_all, world_pts, image_pts);
 
-    // Intrinsic parameters (image -> camera)
-    cv::Mat img = cv::imread(ann.filename);
-    double focal_length = static_cast<double>(img.cols) * 1.5;
-    cv::Point2f img_center = cv::Point2f(img.cols, img.rows) * 0.5f;
+    /// Intrinsic parameters (image -> camera)
+    const float BBOX_SCALE = 0.3f;
+    cv::Point2f shift(ann.bbox.pos.width*BBOX_SCALE, ann.bbox.pos.height*BBOX_SCALE);
+    cv::Rect_<float> bbox_enlarged = cv::Rect_<float>(ann.bbox.pos.x-shift.x, ann.bbox.pos.y-shift.y, ann.bbox.pos.width+(shift.x*2), ann.bbox.pos.height+(shift.y*2));
+    bbox_enlarged.x = bbox_enlarged.x+(bbox_enlarged.width*0.5f)-(bbox_enlarged.height*0.5f);
+    bbox_enlarged.width = bbox_enlarged.height;
+    double focal_length = static_cast<double>(bbox_enlarged.width) * 1.5;
+    cv::Point2f face_center = (bbox_enlarged.tl() + bbox_enlarged.br()) * 0.5f;
     cv::Mat cam_matrix;
-    cam_matrix = (cv::Mat_<float>(3,3) << focal_length,0,img_center.x, 0,focal_length,img_center.y, 0,0,1);
-    // Extrinsic parameters (camera -> 3D world)
+    cam_matrix = (cv::Mat_<float>(3,3) << focal_length,0,face_center.x, 0,focal_length,face_center.y, 0,0,1);
+    /// Extrinsic parameters (camera -> 3D world)
     cv::Mat rot_matrix, trl_matrix;
     ModernPosit::run(world_pts, image_pts, cam_matrix, 100, rot_matrix, trl_matrix);
 //    cv::Mat rot_matrix1 = (cv::Mat_<float>(3,4) << rot_matrix.at<float>(0,0),rot_matrix.at<float>(0,1),rot_matrix.at<float>(0,2),trl_matrix.at<float>(0), rot_matrix.at<float>(1,0),rot_matrix.at<float>(1,1),rot_matrix.at<float>(1,2),trl_matrix.at<float>(1), rot_matrix.at<float>(2,0),rot_matrix.at<float>(2,1),rot_matrix.at<float>(2,2),trl_matrix.at<float>(2));
@@ -211,7 +215,7 @@ getHeadpose
 //    cv::Mat rot_matrix3 = (cv::Mat_<float>(3,4) << rmat3.at<float>(0,0),rmat3.at<float>(0,1),rmat3.at<float>(0,2),tvec3.at<float>(0), rmat3.at<float>(1,0),rmat3.at<float>(1,1),rmat3.at<float>(1,2),tvec3.at<float>(1), rmat3.at<float>(2,0),rmat3.at<float>(2,1),rmat3.at<float>(2,2),tvec3.at<float>(2));
 //    std::cout << rot_matrix3 << std::endl;
 
-    // Decomposition of a rotation matrix into three Euler angles
+    /// Decomposition of a rotation matrix into three Euler angles
     cv::Vec3d euler = ModernPosit::getEulerAngles(rot_matrix, trl_matrix);
     return cv::Point3f(static_cast<float>(euler(0)), static_cast<float>(euler(1)), static_cast<float>(euler(2)));
   }

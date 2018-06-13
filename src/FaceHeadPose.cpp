@@ -9,6 +9,7 @@
 
 // ----------------------- INCLUDES --------------------------------------------
 #include <FaceHeadPose.hpp>
+#include <ModernPosit.h>
 
 namespace upm {
 
@@ -27,11 +28,10 @@ getEulerRotation
   const cv::Point3f headpose
   )
 {
-  cv::Point3f rad = headpose*M_PI/180.0f;
-  cv::Mat Rx = (cv::Mat_<float>(3,3) << 1.0f, 0.0f, 0.0f, 0.0f, cosf(rad.x), sinf(rad.x), 0.0f, -sinf(rad.x), cosf(rad.x)); // yaw
-  cv::Mat Ry = (cv::Mat_<float>(3,3) << cosf(rad.y), 0.0f, sinf(rad.y), 0.0f, 1.0f, 0.0f, -sinf(rad.y), 0.0f, cosf(rad.y)); // pitch
-  cv::Mat Rz = (cv::Mat_<float>(3,3) << cosf(rad.z), -sinf(rad.z), 0.0f, sinf(rad.z), cosf(rad.z), 0.0f, 0.0f, 0.0f, 1.0f); // roll
-  return Rx*Ry*Rz;
+  cv::Mat rot_matrix = ModernPosit::getRotationMatrix(headpose);
+  return (cv::Mat_<float>(3,3) <<  rot_matrix.at<float>(1,2), rot_matrix.at<float>(1,1),-rot_matrix.at<float>(1,0),
+                                  -rot_matrix.at<float>(0,2),-rot_matrix.at<float>(0,1), rot_matrix.at<float>(0,0),
+                                   rot_matrix.at<float>(2,2), rot_matrix.at<float>(2,1),-rot_matrix.at<float>(2,0));
 };
 
 // -----------------------------------------------------------------------------

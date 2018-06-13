@@ -30,15 +30,24 @@ public:
   ~ModernPosit() {};
 
   static void
-  setCorrespondences
+  loadWorldShape
     (
     const std::string &path,
-    const upm::FaceAnnotation &ann,
     const unsigned int &num_landmarks,
+    const std::map< upm::FacePartLabel,std::vector<int> > db_parts,
     std::vector<cv::Point3f> &world_all,
+    std::vector<unsigned int> &index_all
+    );
+
+  static void
+  setCorrespondences
+    (
+    const std::vector<cv::Point3f> &world_all,
+    const std::vector<unsigned int> &index_all,
+    const upm::FaceAnnotation &ann,
+    const std::vector<unsigned int> &mask,
     std::vector<cv::Point3f> &world_pts,
-    std::vector<cv::Point2f> &image_pts,
-    const std::vector<unsigned int> &mask = {}
+    std::vector<cv::Point2f> &image_pts
     );
 
   static void
@@ -57,6 +66,12 @@ public:
     (
     const cv::Mat &rot_matrix,
     const cv::Mat &trl_matrix
+    );
+
+  static cv::Mat
+  getRotationMatrix
+    (
+    const cv::Point3f headpose
     );
 };
 

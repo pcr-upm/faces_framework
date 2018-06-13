@@ -185,9 +185,12 @@ getHeadpose
   if ((ann.headpose == upm::FaceAnnotation().headpose) and (ann.parts != upm::FaceAnnotation().parts))
   {
     const unsigned int num_landmarks = static_cast<int>(DB_LANDMARKS.size());
-    std::vector<cv::Point3f> world_pts, world_all;
+    std::vector<cv::Point3f> world_all;
+    std::vector<unsigned int> index_all;
+    ModernPosit::loadWorldShape("faces_framework/headpose/posit/data/", num_landmarks, DB_PARTS, world_all, index_all);
+    std::vector<cv::Point3f> world_pts;
     std::vector<cv::Point2f> image_pts;
-    ModernPosit::setCorrespondences("faces_framework/headpose/posit/data/", ann, num_landmarks, world_all, world_pts, image_pts);
+    ModernPosit::setCorrespondences(world_all, index_all, ann, {}, world_pts, image_pts);
 
     /// Intrinsic parameters (image -> camera)
     const float BBOX_SCALE = 0.3f;

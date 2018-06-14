@@ -28,7 +28,7 @@ getEulerRotation
   const cv::Point3f headpose
   )
 {
-  cv::Mat rot_matrix = ModernPosit::getRotationMatrix(headpose);
+  cv::Mat rot_matrix = ModernPosit::eulerToRotationMatrix(headpose);
   return (cv::Mat_<float>(3,3) <<  rot_matrix.at<float>(1,2), rot_matrix.at<float>(1,1),-rot_matrix.at<float>(1,0),
                                   -rot_matrix.at<float>(0,2),-rot_matrix.at<float>(0,1), rot_matrix.at<float>(0,0),
                                    rot_matrix.at<float>(2,2), rot_matrix.at<float>(2,1),-rot_matrix.at<float>(2,0));

@@ -33,8 +33,7 @@ public:
   loadWorldShape
     (
     const std::string &path,
-    const unsigned int &num_landmarks,
-    const std::map< upm::FacePartLabel,std::vector<int> > db_parts,
+    const std::map< upm::FacePartLabel,std::vector<int> > &db_parts,
     std::vector<cv::Point3f> &world_all,
     std::vector<unsigned int> &index_all
     );
@@ -61,17 +60,17 @@ public:
     cv::Mat &trl_matrix
     );
 
-  static cv::Vec3d
-  getEulerAngles
+  static cv::Point3f
+  rotationMatrixToEuler
     (
     const cv::Mat &rot_matrix,
     const cv::Mat &trl_matrix
     );
 
   static cv::Mat
-  getRotationMatrix
+  eulerToRotationMatrix
     (
-    const cv::Point3f headpose
+    const cv::Point3f &headpose
     );
 };
 

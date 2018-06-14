@@ -184,10 +184,9 @@ getHeadpose
   /// Default annotation or modern POSIT feature-based algorithm
   if ((ann.headpose == upm::FaceAnnotation().headpose) and (ann.parts != upm::FaceAnnotation().parts))
   {
-    const unsigned int num_landmarks = static_cast<int>(DB_LANDMARKS.size());
     std::vector<cv::Point3f> world_all;
     std::vector<unsigned int> index_all;
-    ModernPosit::loadWorldShape("faces_framework/headpose/posit/data/", num_landmarks, DB_PARTS, world_all, index_all);
+    ModernPosit::loadWorldShape("faces_framework/headpose/posit/data/", DB_PARTS, world_all, index_all);
     std::vector<cv::Point3f> world_pts;
     std::vector<cv::Point2f> image_pts;
     ModernPosit::setCorrespondences(world_all, index_all, ann, {}, world_pts, image_pts);
@@ -219,8 +218,7 @@ getHeadpose
 //    std::cout << rot_matrix3 << std::endl;
 
     /// Decomposition of a rotation matrix into three Euler angles
-    cv::Vec3d euler = ModernPosit::getEulerAngles(rot_matrix, trl_matrix);
-    return cv::Point3f(static_cast<float>(euler(0)), static_cast<float>(euler(1)), static_cast<float>(euler(2)));
+    return ModernPosit::rotationMatrixToEuler(rot_matrix, trl_matrix);
   }
   return ann.headpose;
 };

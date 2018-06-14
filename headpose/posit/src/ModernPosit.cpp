@@ -24,12 +24,15 @@ void
 ModernPosit::loadWorldShape
   (
   const std::string &path,
-  const unsigned int &num_landmarks,
-  const std::map< upm::FacePartLabel,std::vector<int> > db_parts,
+  const std::map< upm::FacePartLabel,std::vector<int> > &db_parts,
   std::vector<cv::Point3f> &world_all,
   std::vector<unsigned int> &index_all
   )
 {
+  unsigned int num_landmarks = 0;
+  for (const std::pair<upm::FacePartLabel,std::vector<int>> &db_part: db_parts)
+    for (int feature_idx : db_part.second)
+      num_landmarks++;
   // Load 3D mean face coordinates
   MeanFace3DModel mean_face_3D;
   std::vector<int> posit_landmarks;
@@ -209,8 +212,8 @@ ModernPosit::run
 // Restrictions and Caveats:
 //
 // -----------------------------------------------------------------------------
-cv::Vec3d
-ModernPosit::getEulerAngles
+cv::Point3f
+ModernPosit::rotationMatrixToEuler
   (
   const cv::Mat &rot_matrix,
   const cv::Mat &trl_matrix
@@ -265,7 +268,8 @@ ModernPosit::getEulerAngles
     }
   }
   /// Convert to degrees
-  return cv::Vec3d(-yaw, pitch, -roll) * (180.0/M_PI);
+  cv::Vec3d euler = cv::Vec3d(-yaw, pitch, -roll) * (180.0/M_PI);
+  return cv::Point3f(static_cast<float>(euler(0)), static_cast<float>(euler(1)), static_cast<float>(euler(2)));
 };
 
 // -----------------------------------------------------------------------------
@@ -278,9 +282,9 @@ ModernPosit::getEulerAngles
 //
 // -----------------------------------------------------------------------------
 cv::Mat
-ModernPosit::getRotationMatrix
+ModernPosit::eulerToRotationMatrix
   (
-  const cv::Point3f headpose
+  const cv::Point3f &headpose
   )
 {
   cv::Point3f rad = headpose * (M_PI/180.0f);

@@ -218,7 +218,7 @@ getHeadpose
 //    std::cout << rot_matrix3 << std::endl;
 
     /// Decomposition of a rotation matrix into three Euler angles
-    return ModernPosit::rotationMatrixToEuler(rot_matrix, trl_matrix);
+    return ModernPosit::rotationMatrixToEuler(rot_matrix);
   }
   return ann.headpose;
 };

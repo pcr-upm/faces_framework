@@ -63,8 +63,7 @@ public:
   static cv::Point3f
   rotationMatrixToEuler
     (
-    const cv::Mat &rot_matrix,
-    const cv::Mat &trl_matrix
+    const cv::Mat &rot_matrix
     );
 
   static cv::Mat

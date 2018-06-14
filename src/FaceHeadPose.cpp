@@ -25,7 +25,7 @@ namespace upm {
 cv::Mat
 getEulerRotation
   (
-  const cv::Point3f headpose
+  const cv::Point3f &headpose
   )
 {
   cv::Mat rot_matrix = ModernPosit::eulerToRotationMatrix(headpose);

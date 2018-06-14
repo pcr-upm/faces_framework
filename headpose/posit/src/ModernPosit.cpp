@@ -132,10 +132,10 @@ ModernPosit::run
 
   /// Normalize image points
   float focal_length = cam_matrix.at<float>(0,0);
-  cv::Point2f img_center = cv::Point2f(cam_matrix.at<float>(0,2),cam_matrix.at<float>(1,2));
+  cv::Point2f face_center = cv::Point2f(cam_matrix.at<float>(0,2),cam_matrix.at<float>(1,2));
   std::vector<cv::Point2f> centered_pts;
   for (const cv::Point2f &pt : image_pts)
-    centered_pts.push_back(cv::Point2f(pt - img_center) * (1.0f/focal_length));
+    centered_pts.push_back(cv::Point2f(pt - face_center) * (1.0f/focal_length));
   cv::Mat Ui(num_landmarks,1,CV_64F), Vi(num_landmarks,1,CV_64F);
   for (int i=0; i < num_landmarks; i++)
   {
@@ -215,16 +215,15 @@ ModernPosit::run
 cv::Point3f
 ModernPosit::rotationMatrixToEuler
   (
-  const cv::Mat &rot_matrix,
-  const cv::Mat &trl_matrix
+  const cv::Mat &rot_matrix
   )
 {
+  /// Rotate coordinates system from 3D world to camera
   cv::Mat rotate_coord_system, matrix;
-  rotate_coord_system = (cv::Mat_<float>(4,4) << 0,0,-1,0, -1,0,0,0, 0,1,0,0, 0,0,0,1);
-  matrix = (cv::Mat_<float>(4,4) << rot_matrix.at<float>(0,0),rot_matrix.at<float>(0,1),rot_matrix.at<float>(0,2),trl_matrix.at<float>(0,0),
-                                    rot_matrix.at<float>(1,0),rot_matrix.at<float>(1,1),rot_matrix.at<float>(1,2),trl_matrix.at<float>(1,0),
-                                    rot_matrix.at<float>(2,0),rot_matrix.at<float>(2,1),rot_matrix.at<float>(2,2),trl_matrix.at<float>(2,0),
-                                    0,0,0,1);
+  rotate_coord_system = (cv::Mat_<float>(3,3) << 0,0,-1, -1,0,0, 0,1,0);
+  matrix = (cv::Mat_<float>(3,3) << rot_matrix.at<float>(0,0),rot_matrix.at<float>(0,1),rot_matrix.at<float>(0,2),
+                                    rot_matrix.at<float>(1,0),rot_matrix.at<float>(1,1),rot_matrix.at<float>(1,2),
+                                    rot_matrix.at<float>(2,0),rot_matrix.at<float>(2,1),rot_matrix.at<float>(2,2));
   matrix = rotate_coord_system * matrix;
 
   const double a11 = matrix.at<float>(0,0), a12 = matrix.at<float>(0,1), a13 = matrix.at<float>(0,2);
@@ -287,12 +286,16 @@ ModernPosit::eulerToRotationMatrix
   const cv::Point3f &headpose
   )
 {
+  /// Convert to radians
   cv::Point3f rad = headpose * (M_PI/180.0f);
-  cv::Mat Rx = (cv::Mat_<float>(3,3) << 1.0f, 0.0f, 0.0f, 0.0f, cosf(rad.x), sinf(rad.x), 0.0f, -sinf(rad.x), cosf(rad.x)); // yaw
-  cv::Mat Ry = (cv::Mat_<float>(3,3) << cosf(rad.y), 0.0f, sinf(rad.y), 0.0f, 1.0f, 0.0f, -sinf(rad.y), 0.0f, cosf(rad.y)); // pitch
-  cv::Mat Rz = (cv::Mat_<float>(3,3) << cosf(rad.z), -sinf(rad.z), 0.0f, sinf(rad.z), cosf(rad.z), 0.0f, 0.0f, 0.0f, 1.0f); // roll
+  cv::Mat Rx, Ry, Rz;
+  Rx = (cv::Mat_<float>(3,3) << 1.0f, 0.0f, 0.0f, 0.0f, cosf(rad.x), sinf(rad.x), 0.0f, -sinf(rad.x), cosf(rad.x)); // yaw
+  Ry = (cv::Mat_<float>(3,3) << cosf(rad.y), 0.0f, sinf(rad.y), 0.0f, 1.0f, 0.0f, -sinf(rad.y), 0.0f, cosf(rad.y)); // pitch
+  Rz = (cv::Mat_<float>(3,3) << cosf(rad.z), -sinf(rad.z), 0.0f, sinf(rad.z), cosf(rad.z), 0.0f, 0.0f, 0.0f, 1.0f); // roll
+  /// Rotate coordinates system from camera to 3D world
   cv::Mat matrix = Rx*Ry*Rz;
-  return (cv::Mat_<float>(3,3) <<  matrix.at<float>(1,2),-matrix.at<float>(1,1),-matrix.at<float>(1,0),
-                                  -matrix.at<float>(0,2), matrix.at<float>(0,1), matrix.at<float>(0,0),
-                                  -matrix.at<float>(2,2), matrix.at<float>(2,1), matrix.at<float>(2,0));
+  matrix = (cv::Mat_<float>(3,3) <<  matrix.at<float>(1,2),-matrix.at<float>(1,1),-matrix.at<float>(1,0),
+                                    -matrix.at<float>(0,2), matrix.at<float>(0,1), matrix.at<float>(0,0),
+                                    -matrix.at<float>(2,2), matrix.at<float>(2,1), matrix.at<float>(2,0));
+  return matrix;
 };

@@ -23,15 +23,18 @@ namespace upm {
 //
 // -----------------------------------------------------------------------------
 cv::Mat
-getEulerRotation
+projectAxis
   (
   const cv::Point3f &headpose
   )
 {
-  cv::Mat rot_matrix = ModernPosit::eulerToRotationMatrix(headpose);
-  return (cv::Mat_<float>(3,3) <<  rot_matrix.at<float>(1,2), rot_matrix.at<float>(1,1),-rot_matrix.at<float>(1,0),
-                                  -rot_matrix.at<float>(0,2),-rot_matrix.at<float>(0,1), rot_matrix.at<float>(0,0),
-                                   rot_matrix.at<float>(2,2), rot_matrix.at<float>(2,1),-rot_matrix.at<float>(2,0));
+  cv::Mat axis = cv::Mat::eye(3,3,cv::DataType<float>::type); // [yaw (blue), pitch (green), roll (red)]
+  cv::Mat ann_axis, rot_matrix = ModernPosit::eulerToRotationMatrix(headpose);
+  rot_matrix = (cv::Mat_<float>(3,3) <<  rot_matrix.at<float>(1,2), rot_matrix.at<float>(1,1),-rot_matrix.at<float>(1,0),
+                                        -rot_matrix.at<float>(0,2),-rot_matrix.at<float>(0,1), rot_matrix.at<float>(0,0),
+                                         rot_matrix.at<float>(2,2), rot_matrix.at<float>(2,1),-rot_matrix.at<float>(2,0));
+  ann_axis = rot_matrix*axis;
+  return ann_axis;
 };
 
 // -----------------------------------------------------------------------------
@@ -51,20 +54,15 @@ FaceHeadPose::show
   const upm::FaceAnnotation &ann
   )
 {
-  cv::Mat axis = cv::Mat::eye(3,3,cv::DataType<float>::type);
-  axis = axis.reshape(3);
-
   // Ground truth
   cv::Scalar blue_color(255,0,0), green_color(0,255,0), red_color(0,0,255);
   double length = static_cast<int>(roundf(ann.bbox.pos.height)*0.5f);
   int thickness = MAX(static_cast<int>(roundf(ann.bbox.pos.height*0.01f)), 3);
-  cv::Mat ann_axis;
-  cv::transform(axis, ann_axis, getEulerRotation(ann.headpose));
-  ann_axis *= length;
+  cv::Mat ann_axis = projectAxis(ann.headpose) * length;
   cv::Point mid = (ann.bbox.pos.tl() + ann.bbox.pos.br()) * 0.5;
-  viewer->line(mid.x, mid.y, mid.x+ann_axis.at<float>(0,1), mid.y-ann_axis.at<float>(0,0), thickness, blue_color);
-  viewer->line(mid.x, mid.y, mid.x+ann_axis.at<float>(1,1), mid.y-ann_axis.at<float>(1,0), thickness, green_color);
-  viewer->line(mid.x, mid.y, mid.x+ann_axis.at<float>(2,1), mid.y-ann_axis.at<float>(2,0), thickness, red_color);
+  viewer->line(mid.x, mid.y, mid.x+ann_axis.at<float>(1,0), mid.y-ann_axis.at<float>(0,0), thickness, blue_color);
+  viewer->line(mid.x, mid.y, mid.x+ann_axis.at<float>(1,1), mid.y-ann_axis.at<float>(0,1), thickness, green_color);
+  viewer->line(mid.x, mid.y, mid.x+ann_axis.at<float>(1,2), mid.y-ann_axis.at<float>(0,2), thickness, red_color);
 
   // Estimated head-pose
   cv::Scalar cyan_color(122,0,0), lime_color(0,122,0), salmon_color(0,0,122);
@@ -72,13 +70,11 @@ FaceHeadPose::show
   {
     length = static_cast<int>(roundf(face.bbox.pos.height)*0.5f);
     thickness = MAX(static_cast<int>(roundf(face.bbox.pos.height*0.01f)), 3);
-    cv::Mat face_axis;
-    cv::transform(axis, face_axis, getEulerRotation(face.headpose));
-    face_axis *= length;
+    cv::Mat face_axis = projectAxis(face.headpose) * length;
     mid = (face.bbox.pos.tl() + face.bbox.pos.br()) * 0.5;
-    viewer->line(mid.x, mid.y, mid.x+face_axis.at<float>(0,1), mid.y-face_axis.at<float>(0,0), thickness, cyan_color);
-    viewer->line(mid.x, mid.y, mid.x+face_axis.at<float>(1,1), mid.y-face_axis.at<float>(1,0), thickness, lime_color);
-    viewer->line(mid.x, mid.y, mid.x+face_axis.at<float>(2,1), mid.y-face_axis.at<float>(2,0), thickness, salmon_color);
+    viewer->line(mid.x, mid.y, mid.x+face_axis.at<float>(1,0), mid.y-face_axis.at<float>(0,0), thickness, cyan_color);
+    viewer->line(mid.x, mid.y, mid.x+face_axis.at<float>(1,1), mid.y-face_axis.at<float>(0,1), thickness, lime_color);
+    viewer->line(mid.x, mid.y, mid.x+face_axis.at<float>(1,2), mid.y-face_axis.at<float>(0,2), thickness, salmon_color);
   }
 };
 
@@ -129,28 +125,22 @@ FaceHeadPose::save
   cv::Scalar blue_color(255,0,0), green_color(0,255,0), red_color(0,0,255), cyan_color(122,0,0), lime_color(0,122,0), salmon_color(0,0,122);
   double length = static_cast<int>(roundf(ann.bbox.pos.height)*0.5f);
   int thickness = MAX(static_cast<int>(roundf(ann.bbox.pos.height*0.01f)), 3);
-  cv::Mat axis = cv::Mat::eye(3,3,cv::DataType<float>::type);
-  axis = axis.reshape(3);
   for (const FaceAnnotation &face : faces)
   {
     cv::Mat image = cv::imread(face.filename, CV_LOAD_IMAGE_COLOR);
-    cv::Mat ann_axis;
-    cv::transform(axis, ann_axis, getEulerRotation(ann.headpose));
-    ann_axis *= length;
+    cv::Mat ann_axis = projectAxis(ann.headpose) * length;
     cv::Point mid = (ann.bbox.pos.tl() + ann.bbox.pos.br()) * 0.5;
-    cv::line(image, mid, cv::Point2f(mid.x+ann_axis.at<float>(0,1), mid.y-ann_axis.at<float>(0,0)), blue_color, thickness);
-    cv::line(image, mid, cv::Point2f(mid.x+ann_axis.at<float>(1,1), mid.y-ann_axis.at<float>(1,0)), green_color, thickness);
-    cv::line(image, mid, cv::Point2f(mid.x+ann_axis.at<float>(2,1), mid.y-ann_axis.at<float>(2,0)), red_color, thickness);
+    cv::line(image, mid, cv::Point2f(mid.x+ann_axis.at<float>(1,0), mid.y-ann_axis.at<float>(0,0)), blue_color, thickness);
+    cv::line(image, mid, cv::Point2f(mid.x+ann_axis.at<float>(1,1), mid.y-ann_axis.at<float>(0,1)), green_color, thickness);
+    cv::line(image, mid, cv::Point2f(mid.x+ann_axis.at<float>(1,2), mid.y-ann_axis.at<float>(0,2)), red_color, thickness);
 
     length = static_cast<int>(roundf(face.bbox.pos.height)*0.5f);
     thickness = MAX(static_cast<int>(roundf(face.bbox.pos.height*0.01f)), 3);
-    cv::Mat face_axis;
-    cv::transform(axis, face_axis, getEulerRotation(face.headpose));
-    face_axis *= length;
+    cv::Mat face_axis = projectAxis(face.headpose) * length;
     mid = (face.bbox.pos.tl() + face.bbox.pos.br()) * 0.5;
-    cv::line(image, mid, cv::Point2f(mid.x+face_axis.at<float>(0,1), mid.y-face_axis.at<float>(0,0)), cyan_color, thickness);
-    cv::line(image, mid, cv::Point2f(mid.x+face_axis.at<float>(1,1), mid.y-face_axis.at<float>(1,0)), lime_color, thickness);
-    cv::line(image, mid, cv::Point2f(mid.x+face_axis.at<float>(2,1), mid.y-face_axis.at<float>(2,0)), salmon_color, thickness);
+    cv::line(image, mid, cv::Point2f(mid.x+face_axis.at<float>(1,0), mid.y-face_axis.at<float>(0,0)), cyan_color, thickness);
+    cv::line(image, mid, cv::Point2f(mid.x+face_axis.at<float>(1,1), mid.y-face_axis.at<float>(0,1)), lime_color, thickness);
+    cv::line(image, mid, cv::Point2f(mid.x+face_axis.at<float>(1,2), mid.y-face_axis.at<float>(0,2)), salmon_color, thickness);
 
     // Absolute head-pose error
     float error = static_cast<float>(cv::sum(cv::Mat(ann.headpose-face.headpose))[0]);

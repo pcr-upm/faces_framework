@@ -25,3 +25,6 @@
 [submodule "multitask/honari_cvpr16"]
 	path = multitask/honari_cvpr16
 	url = git@github.com:bobetocalo/honari_cvpr16.git
+[submodule "alignment/bobetocalo_ciarp18"]
+	path = alignment/bobetocalo_ciarp18
+	url = git@github.com:bobetocalo/bobetocalo_ciarp18.git

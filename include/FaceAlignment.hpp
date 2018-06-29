@@ -85,6 +85,7 @@ public:
     );
 
   ErrorMeasure _measure;
+  std::string _database;
 };
 
 } // namespace upm

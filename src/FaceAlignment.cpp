@@ -218,11 +218,11 @@ FaceAlignment::save
       else
         menpo_landmarks = {117, 116, 115, 114, 113, 112, 111, 110, 24, 108, 107, 106, 6, 126, 5, 124, 128, 129, 130, 17, 135, 18, 144, 145, 12, 147, 148, 22, 153, 154, 21, 156, 157, 23, 163, 164, 165, 166, 167};
       std::ofstream ofs("output/err/points/" + filepath.substr(0,filepath.size()-3) + "pts");
-      ofs << "output/err/points/" + filepath.substr(0,filepath.size()-3) + "pts" << std::endl;
+//      ofs << "output/err/points/" + filepath.substr(0,filepath.size()-3) + "pts" << std::endl;
       ofs << "version: 1" << std::endl;
       ofs << "n_points: " << menpo_landmarks.size() << std::endl;
       ofs << "{" << std::endl;
-      cv::rectangle(image, face.bbox.pos.tl(), face.bbox.pos.br(), cv::Scalar(0,255,0), thickness);
+//      cv::rectangle(image, face.bbox.pos.tl(), face.bbox.pos.br(), cv::Scalar(0,255,0), thickness);
       for (const unsigned int idx: menpo_landmarks)
         for (const FacePart &face_part : face.parts)
           for (auto it=face_part.landmarks.begin(), next=std::next(it); it < face_part.landmarks.end(); it++, next++)
@@ -231,6 +231,7 @@ FaceAlignment::save
               if (next != face_part.landmarks.end())
                 cv::line(image, (*it).pos, (*next).pos, green_color, thickness);
               cv::circle(image, (*it).pos, radius, (*it).visible ? green_color : red_color, -1);
+              ofs << (*it).pos.x << " " << (*it).pos.y << std::endl;
             }
       ofs << "}" << std::endl;
       ofs.close();

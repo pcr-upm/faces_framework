@@ -201,6 +201,10 @@ ModernPosit::run
                                         static_cast<float>(r2[0]),static_cast<float>(r2[1]),static_cast<float>(r2[2]),
                                         static_cast<float>(r3[0]),static_cast<float>(r3[1]),static_cast<float>(r3[2]));
   trl_matrix = (cv::Mat_<float>(3,1) << static_cast<float>(Tx), static_cast<float>(Ty), static_cast<float>(Tz));
+  /// Convert to nearest orthogonal rotation matrix
+  cv::Mat w, u, vt;
+  cv::SVD::compute(rot_matrix, w, u, vt); /// R = U*D*Vt
+  rot_matrix = u*cv::Mat::eye(3,3,CV_32F)*vt;
 };
 
 // -----------------------------------------------------------------------------
@@ -218,57 +222,42 @@ ModernPosit::rotationMatrixToEuler
   const cv::Mat &rot_matrix
   )
 {
-  /// Rotate coordinates system from 3D world to camera
-  cv::Mat rotate_coord_system, matrix;
-  rotate_coord_system = (cv::Mat_<float>(3,3) << 0,0,-1, -1,0,0, 0,1,0);
-  matrix = (cv::Mat_<float>(3,3) << rot_matrix.at<float>(0,0),rot_matrix.at<float>(0,1),rot_matrix.at<float>(0,2),
-                                    rot_matrix.at<float>(1,0),rot_matrix.at<float>(1,1),rot_matrix.at<float>(1,2),
-                                    rot_matrix.at<float>(2,0),rot_matrix.at<float>(2,1),rot_matrix.at<float>(2,2));
-  matrix = rotate_coord_system * matrix;
+  /// This conversion is better avoided, since it has singularities at pitch + & - 90 degrees, so if already working
+  /// in terms of matrices its better to continue using matrices if possible.
+  /// http://euclideanspace.com/maths/geometry/rotations/conversions/matrixToEuler/index.htm
+  const double a00 = rot_matrix.at<float>(0,0), a01 = rot_matrix.at<float>(0,1), a02 = rot_matrix.at<float>(0,2);
+  const double a10 = rot_matrix.at<float>(1,0), a11 = rot_matrix.at<float>(1,1), a12 = rot_matrix.at<float>(1,2);
+  const double a20 = rot_matrix.at<float>(2,0), a21 = rot_matrix.at<float>(2,1), a22 = rot_matrix.at<float>(2,2);
 
-  const double a11 = matrix.at<float>(0,0), a12 = matrix.at<float>(0,1), a13 = matrix.at<float>(0,2);
-  const double a21 = matrix.at<float>(1,0), a22 = matrix.at<float>(1,1), a23 = matrix.at<float>(1,2);
-  const double a31 = matrix.at<float>(2,0), a32 = matrix.at<float>(2,1), a33 = matrix.at<float>(2,2);
-
-  double roll, pitch, yaw;
-  if (fabs(1.0 - a31) <= DBL_EPSILON) // special case a31 == +1
+  double yaw, pitch, roll;
+  if (fabs(1.0 - a10) <= DBL_EPSILON) // singularity at north pole / special case a10 == +1
   {
-    UPM_PRINT("Gimbal lock case a31 == " << a31);
-    pitch = -M_PI_2;
-    yaw   = M_PI_4; // arbitrary value
-    roll  = atan2(a12,a13) - yaw;
-  }
-  else if (fabs(-1.0 - a31) <= DBL_EPSILON) // special case a31 == -1
-  {
-    UPM_PRINT("Gimbal lock case a31 == " << a31);
+    UPM_PRINT("Gimbal lock case a10 == " << a10);
+    yaw   = atan2(a02,a22);
     pitch = M_PI_2;
-    yaw   = M_PI_4; // arbitrary value
-    roll  = atan2(a12,a13) + yaw;
+    roll  = 0;
   }
-  else // standard case a31 != +/-1
+  else if (fabs(-1.0 - a10) <= DBL_EPSILON) // singularity at south pole / special case a10 == -1
   {
-    pitch = asin(-a31);
-    /// Two cases depending on where pitch angle lies
-    if ((pitch < M_PI_2) and (pitch > -M_PI_2))
-    {
-      roll = atan2(a32,a33);
-      yaw  = atan2(a21,a11);
-    }
-    else if ((pitch < 3.0*M_PI_2) and (pitch > M_PI_2))
-    {
-      roll = atan2(-a32,-a33);
-      yaw  = atan2(-a21,-a11);
-    }
-    else
-    {
-      UPM_ERROR("This should never happen in pitch-roll-yaw computation");
-      roll = 2.0 * M_PI;
-      yaw  = 2.0 * M_PI;
-    }
+    UPM_PRINT("Gimbal lock case a10 == " << a10);
+    yaw   = atan2(a02,a22);
+    pitch = -M_PI_2;
+    roll  = 0;
+  }
+  else // standard case a10 != +-1
+  {
+    yaw   = atan2(-a20,a00);
+    pitch = asin(a10);
+    roll  = atan2(-a12,a11);
   }
   /// Convert to degrees
-  cv::Vec3d euler = cv::Vec3d(-yaw, pitch, -roll) * (180.0/M_PI);
-  return cv::Point3f(static_cast<float>(euler(0)), static_cast<float>(euler(1)), static_cast<float>(euler(2)));
+  cv::Point3f euler = cv::Point3d(yaw, pitch, roll) * (180.0/M_PI);
+  /// Change coordinates system
+  euler = cv::Point3f((-euler.x)+90, -euler.y, (-euler.z)-90);
+  if (euler.x > 180) euler.x -= 360; else if (euler.x < -180) euler.x += 360;
+  if (euler.y > 180) euler.y -= 360; else if (euler.y < -180) euler.y += 360;
+  if (euler.z > 180) euler.z -= 360; else if (euler.z < -180) euler.z += 360;
+  return euler;
 };
 
 // -----------------------------------------------------------------------------
@@ -286,16 +275,22 @@ ModernPosit::eulerToRotationMatrix
   const cv::Point3f &headpose
   )
 {
+  /// It is much easier to convert in this direction than to convert back from the matrix to euler angles.
+  /// Therefore once we convert to matricies it is best to continue to work in matrices.
+  /// http://euclideanspace.com/maths/geometry/rotations/conversions/eulerToMatrix/index.htm
+  /// Change coordinates system
+  cv::Point3f euler = cv::Point3f(-(headpose.x-90), -headpose.y, -(headpose.z+90));
   /// Convert to radians
-  cv::Point3f rad = headpose * (M_PI/180.0f);
-  cv::Mat Rx, Ry, Rz;
-  Rx = (cv::Mat_<float>(3,3) << 1.0f, 0.0f, 0.0f, 0.0f, cosf(rad.x), sinf(rad.x), 0.0f, -sinf(rad.x), cosf(rad.x)); // yaw
-  Ry = (cv::Mat_<float>(3,3) << cosf(rad.y), 0.0f, sinf(rad.y), 0.0f, 1.0f, 0.0f, -sinf(rad.y), 0.0f, cosf(rad.y)); // pitch
-  Rz = (cv::Mat_<float>(3,3) << cosf(rad.z), -sinf(rad.z), 0.0f, sinf(rad.z), cosf(rad.z), 0.0f, 0.0f, 0.0f, 1.0f); // roll
-  /// Rotate coordinates system from camera to 3D world
-  cv::Mat matrix = Rx*Ry*Rz;
-  matrix = (cv::Mat_<float>(3,3) <<  matrix.at<float>(1,2),-matrix.at<float>(1,1),-matrix.at<float>(1,0),
-                                    -matrix.at<float>(0,2), matrix.at<float>(0,1), matrix.at<float>(0,0),
-                                    -matrix.at<float>(2,2), matrix.at<float>(2,1), matrix.at<float>(2,0));
-  return matrix;
+  cv::Point3f rad = euler * (M_PI/180.0f);
+  float cy = cosf(rad.x);
+  float sy = sinf(rad.x);
+  float cp = cosf(rad.y);
+  float sp = sinf(rad.y);
+  float cr = cosf(rad.z);
+  float sr = sinf(rad.z);
+  cv::Mat Ry, Rp, Rr;
+  Ry = (cv::Mat_<float>(3,3) << cy, 0.0f, sy, 0.0f, 1.0f, 0.0f, -sy, 0.0f, cy);
+  Rp = (cv::Mat_<float>(3,3) << cp, -sp, 0.0f, sp, cp, 0.0f, 0.0f, 0.0f, 1.0f);
+  Rr = (cv::Mat_<float>(3,3) << 1.0f, 0.0f, 0.0f, 0.0f, cr, -sr, 0.0f, sr, cr);
+  return Ry*Rp*Rr;
 };

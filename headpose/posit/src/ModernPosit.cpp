@@ -30,10 +30,9 @@ ModernPosit::loadWorldShape
   )
 {
   unsigned int num_landmarks = 0;
-  for (const std::pair<upm::FacePartLabel,std::vector<int>> &db_part: db_parts)
-    for (int feature_idx : db_part.second)
-      num_landmarks++;
-  // Load 3D mean face coordinates
+  for (const auto &db_part: db_parts)
+    num_landmarks += db_part.second.size();
+  /// Load 3D mean face coordinates
   MeanFace3DModel mean_face_3D;
   std::vector<int> posit_landmarks;
   switch (num_landmarks)
@@ -59,7 +58,7 @@ ModernPosit::loadWorldShape
       break;
     }
   }
-  for (const std::pair<upm::FacePartLabel,std::vector<int>> &db_part: db_parts)
+  for (const auto &db_part: db_parts)
     for (int feature_idx : db_part.second)
     {
       auto pos = std::find(posit_landmarks.begin(), posit_landmarks.end(), feature_idx);
@@ -92,11 +91,12 @@ ModernPosit::setCorrespondences
   std::vector<cv::Point2f> &image_pts
   )
 {
+  /// Set correspondences between 3D face and 2D image
   for (const upm::FacePart &ann_part : ann.parts)
     for (const upm::FaceLandmark &ann_landmark : ann_part.landmarks)
     {
       auto pos = std::distance(index_all.begin(), std::find(index_all.begin(),index_all.end(),ann_landmark.feature_idx));
-      if ((not ann_landmark.visible) or (std::find(mask.begin(),mask.end(),ann_landmark.feature_idx)) != mask.end())
+      if ((not ann_landmark.visible) or (std::find(mask.begin(),mask.end(),ann_landmark.feature_idx)) == mask.end())
         continue;
       world_pts.emplace_back(world_all[pos]);
       image_pts.emplace_back(ann_landmark.pos);

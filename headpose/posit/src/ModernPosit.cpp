@@ -96,7 +96,7 @@ ModernPosit::setCorrespondences
     for (const upm::FaceLandmark &ann_landmark : ann_part.landmarks)
     {
       auto pos = std::distance(index_all.begin(), std::find(index_all.begin(),index_all.end(),ann_landmark.feature_idx));
-      if ((not ann_landmark.visible) or (std::find(mask.begin(),mask.end(),ann_landmark.feature_idx)) == mask.end())
+      if (std::find(mask.begin(),mask.end(),ann_landmark.feature_idx) == mask.end())
         continue;
       world_pts.emplace_back(world_all[pos]);
       image_pts.emplace_back(ann_landmark.pos);

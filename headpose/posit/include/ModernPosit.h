@@ -33,7 +33,7 @@ public:
   loadWorldShape
     (
     const std::string &path,
-    const std::map< upm::FacePartLabel,std::vector<int> > &db_parts,
+    const std::vector<unsigned int> &mask,
     std::vector<cv::Point3f> &world_all,
     std::vector<unsigned int> &index_all
     );

@@ -186,7 +186,7 @@ getHeadpose
   {
     std::vector<cv::Point3f> world_all;
     std::vector<unsigned int> index_all;
-    ModernPosit::loadWorldShape("faces_framework/headpose/posit/data/", DB_PARTS, world_all, index_all);
+    ModernPosit::loadWorldShape("faces_framework/headpose/posit/data/", DB_LANDMARKS, world_all, index_all);
     std::vector<cv::Point3f> world_pts;
     std::vector<cv::Point2f> image_pts;
     ModernPosit::setCorrespondences(world_all, index_all, ann, {}, world_pts, image_pts);

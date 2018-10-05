@@ -24,17 +24,15 @@ void
 ModernPosit::loadWorldShape
   (
   const std::string &path,
-  const std::map< upm::FacePartLabel,std::vector<int> > &db_parts,
+  const std::vector<unsigned int> &mask,
   std::vector<cv::Point3f> &world_all,
   std::vector<unsigned int> &index_all
   )
 {
-  unsigned int num_landmarks = 0;
-  for (const auto &db_part: db_parts)
-    num_landmarks += db_part.second.size();
   /// Load 3D mean face coordinates
   MeanFace3DModel mean_face_3D;
   std::vector<int> posit_landmarks;
+  unsigned int num_landmarks = static_cast<unsigned int>(mask.size());
   switch (num_landmarks)
   {
     case 21: {
@@ -47,28 +45,32 @@ ModernPosit::loadWorldShape
       posit_landmarks = {1, 101, 3, 102, 4, 103, 6, 104, 7, 8, 9, 10, 105, 11, 12, 13, 14, 106, 17, 16, 107, 18, 20, 22, 21, 23, 108, 109, 24};
       break;
     }
+    case 68: {
+      mean_face_3D.load(path + "mean_face_3D_68.txt");
+      posit_landmarks = {101, 102, 103, 104, 105, 106, 107, 108, 24, 110, 111, 112, 113, 114, 115, 116, 117, 7, 138, 139, 8, 141, 142, 11, 144, 145, 12, 147, 148, 1, 119, 2, 121, 3, 128, 129, 130, 17, 16, 133, 134, 135, 18, 4, 124, 5, 126, 6, 20, 150, 151, 22, 153, 154, 21, 156, 157, 23, 159, 160, 161, 162, 163, 164, 165, 166, 167, 168};
+      break;
+    }
     case 98: {
       mean_face_3D.load(path + "mean_face_3D_98.txt");
       posit_landmarks = {100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 24, 117, 118, 119, 120, 121, 122, 123, 124, 125, 126, 127, 128, 129, 130, 131, 132, 1, 134, 2, 136, 3, 138, 139, 140, 141, 4, 143, 5, 145, 6, 147, 148, 149, 150, 151, 152, 153, 17, 16, 156, 157, 158, 18, 7, 161, 9, 163, 8, 165, 10, 167, 11, 169, 13, 171, 12, 173, 14, 175, 20, 177, 178, 22, 180, 181, 21, 183, 184, 23, 186, 187, 188, 189, 190, 191, 192, 193, 194, 195, 196, 197};
       break;
     }
     default: {
-      mean_face_3D.load(path + "mean_face_3D_68.txt");
-      posit_landmarks = {101, 102, 103, 104, 105, 106, 107, 108, 24, 110, 111, 112, 113, 114, 115, 116, 117, 7, 138, 139, 8, 141, 142, 11, 144, 145, 12, 147, 148, 1, 119, 2, 121, 3, 128, 129, 130, 17, 16, 133, 134, 135, 18, 4, 124, 5, 126, 6, 20, 150, 151, 22, 153, 154, 21, 156, 157, 23, 159, 160, 161, 162, 163, 164, 165, 166, 167, 168};
+      mean_face_3D.load(path + "mean_face_3D_24.txt");
+      posit_landmarks = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24};
       break;
     }
   }
-  for (const auto &db_part: db_parts)
-    for (int feature_idx : db_part.second)
-    {
-      auto pos = std::find(posit_landmarks.begin(), posit_landmarks.end(), feature_idx);
-      if (pos == posit_landmarks.end())
-        continue;
-      cv::Point3f pt = mean_face_3D.getCoordinatesById(static_cast<int>(std::distance(posit_landmarks.begin(),pos))+1);
-      pt = cv::Point3f(pt.z, -pt.x, -pt.y);
-      world_all.emplace_back(pt);
-      index_all.emplace_back(feature_idx);
-    }
+  for (unsigned int feature_idx: mask)
+  {
+    auto pos = std::find(posit_landmarks.begin(), posit_landmarks.end(), feature_idx);
+    if (pos == posit_landmarks.end())
+      continue;
+    cv::Point3f pt = mean_face_3D.getCoordinatesById(static_cast<int>(std::distance(posit_landmarks.begin(),pos))+1);
+    pt = cv::Point3f(pt.z, -pt.x, -pt.y);
+    world_all.emplace_back(pt);
+    index_all.emplace_back(feature_idx);
+  }
 };
 
 // -----------------------------------------------------------------------------

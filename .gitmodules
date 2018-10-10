@@ -28,3 +28,6 @@
 [submodule "alignment/bobetocalo_ciarp18"]
 	path = alignment/bobetocalo_ciarp18
 	url = git@github.com:bobetocalo/bobetocalo_ciarp18.git
+[submodule "alignment/bobetocalo_eccv18"]
+	path = alignment/bobetocalo_eccv18
+	url = git@github.com:bobetocalo/bobetocalo_eccv18.git

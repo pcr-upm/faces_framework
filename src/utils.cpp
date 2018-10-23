@@ -184,12 +184,15 @@ getHeadpose
   /// Default annotation or modern POSIT feature-based algorithm
   if ((ann.headpose == upm::FaceAnnotation().headpose) and (ann.parts != upm::FaceAnnotation().parts))
   {
+    /// Load 3D face shape
     std::vector<cv::Point3f> world_all;
     std::vector<unsigned int> index_all;
     ModernPosit::loadWorldShape("faces_framework/headpose/posit/data/", DB_LANDMARKS, world_all, index_all);
+    /// Robust correspondences
     std::vector<cv::Point3f> world_pts;
     std::vector<cv::Point2f> image_pts;
-    ModernPosit::setCorrespondences(world_all, index_all, ann, {}, world_pts, image_pts);
+    const std::vector<unsigned int> mask = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24};
+    ModernPosit::setCorrespondences(world_all, index_all, ann, mask, world_pts, image_pts);
 
     /// Intrinsic parameters (image -> camera)
     const float BBOX_SCALE = 0.3f;

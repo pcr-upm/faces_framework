@@ -167,13 +167,13 @@ FaceAlignment::save
   /// Save images with mean error greater than threshold
   float threshold = 8.0f;
   if (_database == "menpo")
-    threshold = 0.08;
+    threshold = 0.08f;
   else if (_database == "wflw")
-    threshold = 10;
+    threshold = 10.0f;
   if (_measure == ErrorMeasure::height)
-    threshold = 4;
-  const int radius = MAX(static_cast<int>(roundf(ann.bbox.pos.height*0.01f)), 3);
-  const int thickness = MAX(static_cast<int>(roundf(ann.bbox.pos.height*0.005f)), 2);
+    threshold = 4.0f;
+  const int radius = MAX(static_cast<int>(roundf(ann.bbox.pos.height*0.01f)), 4);
+  const int thickness = MAX(static_cast<int>(roundf(ann.bbox.pos.height*0.01f)), 3);
   cv::Scalar cyan_color(255,122,0), blue_color(255,0,0), green_color(0,255,0), red_color(0,0,255);
   cv::Mat image = cv::imread(ann.filename, CV_LOAD_IMAGE_COLOR);
   for (const FacePart &ann_part : ann.parts)

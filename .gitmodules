@@ -22,9 +22,9 @@
 [submodule "alignment/cascade"]
 	path = alignment/cascade
 	url = git@github.com:bobetocalo/cascade.git
-[submodule "multitask/honari_cvpr16"]
-	path = multitask/honari_cvpr16
-	url = git@github.com:bobetocalo/honari_cvpr16.git
+[submodule "multitask/bobetocalo_multitask"]
+	path = multitask/bobetocalo_multitask
+	url = git@github.com:bobetocalo/bobetocalo_multitask.git
 [submodule "alignment/bobetocalo_ciarp18"]
 	path = alignment/bobetocalo_ciarp18
 	url = git@github.com:bobetocalo/bobetocalo_ciarp18.git

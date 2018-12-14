@@ -36,8 +36,8 @@ FaceAlignment::parseOptions
   namespace po = boost::program_options;
   po::options_description desc("FaceAlignment options");
   desc.add_options()
-    ("measure", po::value<std::string>()->default_value("height"), "Select measure [pupils, corners, height]")
-    ("database", po::value<std::string>()->default_value("aflw"), "Choose database [300w_public, 300w_private, cofw, aflw, menpo, wflw]");
+    ("measure", po::value<std::string>()->default_value("height"), "Select measure [pupils, corners, height, diagonal]")
+    ("database", po::value<std::string>()->default_value("aflw"), "Choose database [300w_public, 300w_private, cofw, aflw, menpo, wflw, all]");
   UPM_PRINT(desc);
 
   // Process the command line parameters
@@ -51,7 +51,7 @@ FaceAlignment::parseOptions
   std::string measure;
   if (vm.count("measure"))
     measure = vm["measure"].as<std::string>();
-  _measure = (measure == "pupils") ? ErrorMeasure::pupils : (measure == "corners") ? ErrorMeasure::corners : ErrorMeasure::height;
+  _measure = (measure == "pupils") ? ErrorMeasure::pupils : (measure == "corners") ? ErrorMeasure::corners : (measure == "height") ? ErrorMeasure::height : ErrorMeasure::diagonal;
 
   if (vm.count("database"))
     _database = vm["database"].as<std::string>();

@@ -21,7 +21,7 @@
 
 namespace upm {
 
-enum class ErrorMeasure { pupils, corners, height };
+enum class ErrorMeasure { pupils, corners, height, diagonal };
 
 /** ****************************************************************************
  * @class FaceAlignment

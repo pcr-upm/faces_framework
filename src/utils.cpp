@@ -272,7 +272,15 @@ getNormalizedErrors
     case ErrorMeasure::height:
     {
       /// Bounding box size normalization
-      normalization = ann.bbox.pos.height;
+      cv::Rect_<float> bbox = getBbox(ann);
+      normalization = bbox.height;
+      break;
+    }
+    default:
+    {
+      /// Diagonal of the bounding box
+      cv::Rect_<float> bbox = getBbox(ann);
+      normalization = cv::sqrt((bbox.width*bbox.width)+(bbox.height*bbox.height));
       break;
     }
   }

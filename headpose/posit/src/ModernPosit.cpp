@@ -50,6 +50,11 @@ ModernPosit::loadWorldShape
       posit_landmarks = {101, 102, 103, 104, 105, 106, 107, 108, 24, 110, 111, 112, 113, 114, 115, 116, 117, 7, 138, 139, 8, 141, 142, 11, 144, 145, 12, 147, 148, 1, 119, 2, 121, 3, 128, 129, 130, 17, 16, 133, 134, 135, 18, 4, 124, 5, 126, 6, 20, 150, 151, 22, 153, 154, 21, 156, 157, 23, 159, 160, 161, 162, 163, 164, 165, 166, 167, 168};
       break;
     }
+    case 84: {
+      mean_face_3D.load(path + "mean_face_3D_84.txt");
+      posit_landmarks = {100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 24, 117, 118, 119, 120, 121, 122, 123, 124, 125, 126, 127, 128, 129, 130, 131, 132, 1, 134, 2, 136, 3, 4, 139, 5, 141, 6, 143, 144, 145, 17, 16, 148, 149, 150, 18, 7, 153, 154, 8, 156, 157, 11, 159, 160, 12, 162, 163, 20, 165, 166, 22, 168, 169, 21, 171, 172, 23, 174, 175, 176, 177, 178, 179, 180, 181, 182, 183};
+      break;
+    }
     case 98: {
       mean_face_3D.load(path + "mean_face_3D_98.txt");
       posit_landmarks = {100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 24, 117, 118, 119, 120, 121, 122, 123, 124, 125, 126, 127, 128, 129, 130, 131, 132, 1, 134, 2, 136, 3, 138, 139, 140, 141, 4, 143, 5, 145, 6, 147, 148, 149, 150, 151, 152, 153, 17, 16, 156, 157, 158, 18, 7, 161, 9, 163, 8, 165, 10, 167, 11, 169, 13, 171, 12, 173, 14, 175, 20, 177, 178, 22, 180, 181, 21, 183, 184, 23, 186, 187, 188, 189, 190, 191, 192, 193, 194, 195, 196, 197};
@@ -283,7 +288,7 @@ ModernPosit::eulerToRotationMatrix
   )
 {
   /// It is much easier to convert in this direction than to convert back from the matrix to euler angles.
-  /// Therefore once we convert to matricies it is best to continue to work in matrices.
+  /// Therefore once we convert to matrices it is best to continue to work in matrices.
   /// http://euclideanspace.com/maths/geometry/rotations/conversions/eulerToMatrix/index.htm
   /// Change coordinates system
   cv::Point3f euler = cv::Point3f(-(headpose.x-90), -headpose.y, -(headpose.z+90));

@@ -16,9 +16,6 @@
 [submodule "alignment/kazemi_cvpr14"]
 	path = alignment/kazemi_cvpr14
 	url = git@github.com:bobetocalo/kazemi_cvpr14.git
-[submodule "alignment/bobetocalo_ert"]
-	path = alignment/bobetocalo_ert
-	url = git@github.com:bobetocalo/bobetocalo_ert.git
 [submodule "alignment/cascade"]
 	path = alignment/cascade
 	url = git@github.com:bobetocalo/cascade.git
@@ -31,3 +28,6 @@
 [submodule "alignment/bobetocalo_eccv18"]
 	path = alignment/bobetocalo_eccv18
 	url = git@github.com:bobetocalo/bobetocalo_eccv18.git
+[submodule "alignment/ert_simple"]
+	path = alignment/ert_simple
+	url = git@github.com:bobetocalo/ert_simple.git

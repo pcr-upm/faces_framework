@@ -37,7 +37,7 @@ FaceAlignment::parseOptions
   po::options_description desc("FaceAlignment options");
   desc.add_options()
     ("measure", po::value<std::string>()->default_value("height"), "Select measure [pupils, corners, height, diagonal]")
-    ("database", po::value<std::string>()->default_value("aflw"), "Choose database [300w_public, 300w_private, cofw, aflw, menpo, wflw, all]");
+    ("database", po::value<std::string>()->default_value("aflw"), "Choose database [300w_public, 300w_private, cofw, aflw, wflw, menpo, 3dmenpo, all]");
   UPM_PRINT(desc);
 
   // Process the command line parameters
@@ -200,7 +200,7 @@ FaceAlignment::save
     cv::putText(image, text, cv::Point(10, image.rows-10), cv::FONT_HERSHEY_SIMPLEX, 1, red_color);
     if (err > threshold)
     {
-      std::size_t found = face.filename.find_last_of("/");
+      std::size_t found = face.filename.find_last_of('/');
       std::string filepath = dirpath + face.filename.substr(found+1);
       cv::imwrite(filepath, image);
     }
@@ -211,9 +211,9 @@ FaceAlignment::save
     image = cv::imread(ann.filename, CV_LOAD_IMAGE_COLOR);
     for (const FaceAnnotation &face : faces)
     {
-      std::size_t found = face.filename.substr(0,face.filename.find_last_of("/")).find_last_of("/");
+      std::size_t found = face.filename.substr(0,face.filename.find_last_of('/')).find_last_of('/');
       std::string filepath = face.filename.substr(found+1);
-      std::string pose = filepath.substr(0,filepath.find_last_of("/"));
+      std::string pose = filepath.substr(0,filepath.find_last_of('/'));
       std::vector<unsigned int> menpo_landmarks;
       if (pose == "semifrontal")
         menpo_landmarks = {101, 102, 103, 104, 105, 106, 107, 108, 24, 110, 111, 112, 113, 114, 115, 116, 117, 1, 119, 2, 121, 3, 4, 124, 5, 126, 6, 128, 129, 130, 17, 16, 133, 134, 135, 18, 7, 138, 139, 8, 141, 142, 11, 144, 145, 12, 147, 148, 20, 150, 151, 22, 153, 154, 21, 156, 157, 23, 159, 160, 161, 162, 163, 164, 165, 166, 167, 168};

@@ -127,7 +127,7 @@ FaceHeadPose::save
   int thickness = MAX(static_cast<int>(roundf(ann.bbox.pos.height*0.01f)), 3);
   for (const FaceAnnotation &face : faces)
   {
-    cv::Mat image = cv::imread(face.filename, CV_LOAD_IMAGE_COLOR);
+    cv::Mat image = cv::imread(face.filename, cv::IMREAD_COLOR);
     cv::Mat ann_axis = projectAxis(ann.headpose) * length;
     cv::Point mid = (ann.bbox.pos.tl() + ann.bbox.pos.br()) * 0.5;
     cv::line(image, mid, cv::Point2f(mid.x+ann_axis.at<float>(1,0), mid.y-ann_axis.at<float>(0,0)), blue_color, thickness);
@@ -148,7 +148,7 @@ FaceHeadPose::save
     cv::putText(image, text, cv::Point(10, image.rows-10), cv::FONT_HERSHEY_SIMPLEX, 1, red_color);
     if (error > threshold)
     {
-      std::size_t found = face.filename.find_last_of("/");
+      std::size_t found = face.filename.find_last_of('/');
       std::string filepath = dirpath + face.filename.substr(found+1);
       cv::imwrite(filepath, image);
     }

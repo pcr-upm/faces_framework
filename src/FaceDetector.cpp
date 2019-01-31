@@ -113,7 +113,7 @@ FaceDetector::save
   int thickness = MAX(static_cast<int>(roundf(ann.bbox.pos.height*0.01f)), 3);
   cv::Scalar cyan_color(255,122,0), green_color(0,255,0), red_color(0,0,255);
   float max_ratio = FLT_MIN;
-  cv::Mat image = cv::imread(ann.filename, CV_LOAD_IMAGE_COLOR);
+  cv::Mat image = cv::imread(ann.filename, cv::IMREAD_COLOR);
   cv::rectangle(image, ann.bbox.pos.tl(), ann.bbox.pos.br(), cyan_color, thickness);
   for (const FaceAnnotation &face : faces)
   {
@@ -127,7 +127,7 @@ FaceDetector::save
   cv::putText(image, text, cv::Point(10, image.rows-10), cv::FONT_HERSHEY_SIMPLEX, 1, red_color);
   if (max_ratio < threshold)
   {
-    std::size_t found = ann.filename.find_last_of("/");
+    std::size_t found = ann.filename.find_last_of('/');
     std::string filepath = dirpath + ann.filename.substr(found+1);
     cv::imwrite(filepath, image);
   }

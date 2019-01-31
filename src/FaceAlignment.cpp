@@ -177,7 +177,7 @@ FaceAlignment::save
   const int radius = MAX(static_cast<int>(roundf(ann.bbox.pos.height*0.01f)), 4);
   const int thickness = MAX(static_cast<int>(roundf(ann.bbox.pos.height*0.01f)), 3);
   cv::Scalar cyan_color(255,122,0), blue_color(255,0,0), green_color(0,255,0), red_color(0,0,255);
-  cv::Mat image = cv::imread(ann.filename, CV_LOAD_IMAGE_COLOR);
+  cv::Mat image = cv::imread(ann.filename, cv::IMREAD_COLOR);
   for (const FacePart &ann_part : ann.parts)
     for (auto it=ann_part.landmarks.begin(), next=std::next(it); it < ann_part.landmarks.end(); it++, next++)
     {
@@ -210,7 +210,7 @@ FaceAlignment::save
   /// Save points file
   if (_database == "menpo")
   {
-    image = cv::imread(ann.filename, CV_LOAD_IMAGE_COLOR);
+    image = cv::imread(ann.filename, cv::IMREAD_COLOR);
     for (const FaceAnnotation &face : faces)
     {
       std::size_t found = face.filename.substr(0,face.filename.find_last_of('/')).find_last_of('/');

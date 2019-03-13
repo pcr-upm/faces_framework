@@ -94,7 +94,10 @@ FaceAlignment::show
       for (auto it=face_part.landmarks.begin(), next=std::next(it); it < face_part.landmarks.end(); it++, next++)
       {
         if (next != face_part.landmarks.end())
-          viewer->line((*it).pos.x, (*it).pos.y, (*next).pos.x, (*next).pos.y, thickness, green_color);
+          if ((*it).visible or (*next).visible)
+            viewer->line((*it).pos.x, (*it).pos.y, (*next).pos.x, (*next).pos.y, thickness, green_color);
+          else
+            viewer->line((*it).pos.x, (*it).pos.y, (*next).pos.x, (*next).pos.y, thickness, red_color);
         viewer->circle((*it).pos.x, (*it).pos.y, radius, -1, (*it).visible ? green_color : red_color);
       }
 };

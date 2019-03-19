@@ -83,7 +83,10 @@ FaceAlignment::show
     for (auto it=ann_part.landmarks.begin(), next=std::next(it); it < ann_part.landmarks.end(); it++, next++)
     {
       if (next != ann_part.landmarks.end())
-        viewer->line((*it).pos.x, (*it).pos.y, (*next).pos.x, (*next).pos.y, thickness, cyan_color);
+        if ((*it).visible or (*next).visible)
+          viewer->line((*it).pos.x, (*it).pos.y, (*next).pos.x, (*next).pos.y, thickness, cyan_color);
+        else
+          viewer->line((*it).pos.x, (*it).pos.y, (*next).pos.x, (*next).pos.y, thickness, blue_color);
       viewer->circle((*it).pos.x, (*it).pos.y, radius, -1, (*it).visible ? cyan_color : blue_color);
     }
 
@@ -185,7 +188,10 @@ FaceAlignment::save
     for (auto it=ann_part.landmarks.begin(), next=std::next(it); it < ann_part.landmarks.end(); it++, next++)
     {
       if (next != ann_part.landmarks.end())
-        cv::line(image, (*it).pos, (*next).pos, cyan_color, thickness);
+        if ((*it).visible or (*next).visible)
+          cv::line(image, (*it).pos, (*next).pos, cyan_color, thickness);
+        else
+          cv::line(image, (*it).pos, (*next).pos, blue_color, thickness);
       cv::circle(image, (*it).pos, radius, (*it).visible ? cyan_color : blue_color, -1);
     }
   for (const FaceAnnotation &face : faces)
@@ -194,7 +200,10 @@ FaceAlignment::save
       for (auto it=face_part.landmarks.begin(), next=std::next(it); it < face_part.landmarks.end(); it++, next++)
       {
         if (next != face_part.landmarks.end())
-          cv::line(image, (*it).pos, (*next).pos, green_color, thickness);
+          if ((*it).visible or (*next).visible)
+            cv::line(image, (*it).pos, (*next).pos, green_color, thickness);
+          else
+            cv::line(image, (*it).pos, (*next).pos, red_color, thickness);
         cv::circle(image, (*it).pos, radius, (*it).visible ? green_color : red_color, -1);
       }
     std::vector<unsigned int> indices;

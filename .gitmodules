@@ -31,3 +31,6 @@
 [submodule "alignment/ert_simple"]
 	path = alignment/ert_simple
 	url = git@github.com:bobetocalo/ert_simple.git
+[submodule "alignment/bobetocalo_prl19"]
+	path = alignment/bobetocalo_prl19
+	url = git@github.com:bobetocalo/bobetocalo_prl19.git

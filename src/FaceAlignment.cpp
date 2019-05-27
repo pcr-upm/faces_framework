@@ -13,6 +13,7 @@
 #include <FaceAlignment.hpp>
 #include <numeric>
 #include <boost/program_options.hpp>
+#include <boost/filesystem.hpp>
 
 namespace upm {
 
@@ -180,8 +181,8 @@ FaceAlignment::save
     threshold = 4.0f;
   if (_measure == ErrorMeasure::diagonal)
     threshold = 2.0f;
-  const int radius = MAX(static_cast<int>(roundf(ann.bbox.pos.height*0.01f)), 4);
-  const int thickness = MAX(static_cast<int>(roundf(ann.bbox.pos.height*0.01f)), 3);
+  const int radius = MAX(static_cast<int>(roundf(ann.bbox.pos.height*0.01f)), 3);
+  const int thickness = MAX(static_cast<int>(roundf(ann.bbox.pos.height*0.005f)), 2);
   cv::Scalar cyan_color(255,122,0), blue_color(255,0,0), green_color(0,255,0), red_color(0,0,255);
   cv::Mat image = cv::imread(ann.filename, cv::IMREAD_COLOR);
   for (const FacePart &ann_part : ann.parts)
@@ -215,7 +216,14 @@ FaceAlignment::save
     if (err > threshold)
     {
       std::size_t found = face.filename.find_last_of('/');
-      std::string filepath = dirpath + face.filename.substr(found+1);
+      std::string filepath;
+      unsigned int num = 0;
+      do
+      {
+        filepath = dirpath + std::to_string(num) + "_" + face.filename.substr(found+1);
+        num++;
+      }
+      while (boost::filesystem::exists(filepath));
       cv::imwrite(filepath, image);
     }
   }

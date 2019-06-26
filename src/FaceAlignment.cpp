@@ -228,39 +228,42 @@ FaceAlignment::save
     }
   }
   /// Save points file
-  if (_database == "menpo")
+  bool save_points = false;
+  if (save_points)
   {
     image = cv::imread(ann.filename, cv::IMREAD_COLOR);
     for (const FaceAnnotation &face : faces)
     {
-      std::size_t found = face.filename.substr(0,face.filename.find_last_of('/')).find_last_of('/');
-      std::string filepath = face.filename.substr(found+1);
-      std::string pose = filepath.substr(0,filepath.find_last_of('/'));
-      std::vector<unsigned int> menpo_landmarks;
-      if (pose == "semifrontal")
-        menpo_landmarks = {101, 102, 103, 104, 105, 106, 107, 108, 24, 110, 111, 112, 113, 114, 115, 116, 117, 1, 119, 2, 121, 3, 4, 124, 5, 126, 6, 128, 129, 130, 17, 16, 133, 134, 135, 18, 7, 138, 139, 8, 141, 142, 11, 144, 145, 12, 147, 148, 20, 150, 151, 22, 153, 154, 21, 156, 157, 23, 159, 160, 161, 162, 163, 164, 165, 166, 167, 168};
-      else if (getHeadpose(face).x > 0.0f)
-        menpo_landmarks = {101, 102, 103, 104, 105, 106, 107, 108, 24, 110, 111, 112, 1, 119, 2, 121, 128, 129, 130, 17, 133, 16, 139, 138, 7, 142, 141, 22, 151, 150, 20, 160, 159, 23, 163, 162, 161, 168, 167};
+      std::size_t found;
+      if (_database == "menpo")
+        found = face.filename.substr(0,face.filename.find_last_of('/')).find_last_of('/');
       else
-        menpo_landmarks = {117, 116, 115, 114, 113, 112, 111, 110, 24, 108, 107, 106, 6, 126, 5, 124, 128, 129, 130, 17, 135, 18, 144, 145, 12, 147, 148, 22, 153, 154, 21, 156, 157, 23, 163, 164, 165, 166, 167};
+        found = face.filename.find_last_of('/');
+      std::string filepath = face.filename.substr(found+1);
+      std::vector<unsigned int> landmarks;
+      if (_database == "menpo")
+      {
+        std::string pose = filepath.substr(0,filepath.find_last_of('/'));
+        if (pose == "semifrontal")
+          landmarks = {101, 102, 103, 104, 105, 106, 107, 108, 24, 110, 111, 112, 113, 114, 115, 116, 117, 1, 119, 2, 121, 3, 4, 124, 5, 126, 6, 128, 129, 130, 17, 16, 133, 134, 135, 18, 7, 138, 139, 8, 141, 142, 11, 144, 145, 12, 147, 148, 20, 150, 151, 22, 153, 154, 21, 156, 157, 23, 159, 160, 161, 162, 163, 164, 165, 166, 167, 168};
+        else if (getHeadpose(face).x > 0.0f)
+          landmarks = {101, 102, 103, 104, 105, 106, 107, 108, 24, 110, 111, 112, 1, 119, 2, 121, 128, 129, 130, 17, 133, 16, 139, 138, 7, 142, 141, 22, 151, 150, 20, 160, 159, 23, 163, 162, 161, 168, 167};
+        else
+          landmarks = {117, 116, 115, 114, 113, 112, 111, 110, 24, 108, 107, 106, 6, 126, 5, 124, 128, 129, 130, 17, 135, 18, 144, 145, 12, 147, 148, 22, 153, 154, 21, 156, 157, 23, 163, 164, 165, 166, 167};
+      }
+      else
+        landmarks = {100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 24, 117, 118, 119, 120, 121, 122, 123, 124, 125, 126, 127, 128, 129, 130, 131, 132, 1, 134, 2, 136, 3, 138, 139, 140, 141, 4, 143, 5, 145, 6, 147, 148, 149, 150, 151, 152, 153, 17, 16, 156, 157, 158, 18, 7, 161, 9, 163, 8, 165, 10, 167, 11, 169, 13, 171, 12, 173, 14, 175, 20, 177, 178, 22, 180, 181, 21, 183, 184, 23, 186, 187, 188, 189, 190, 191, 192, 193, 194, 195, 196, 197};
       std::ofstream ofs("output/err/points/" + filepath.substr(0,filepath.size()-3) + "pts");
       ofs << "version: 1" << std::endl;
-      ofs << "n_points: " << menpo_landmarks.size() << std::endl;
+      ofs << "n_points: " << landmarks.size() << std::endl;
       ofs << "{" << std::endl;
-//      cv::rectangle(image, face.bbox.pos.tl(), face.bbox.pos.br(), cv::Scalar(0,255,0), thickness);
-      for (const unsigned int idx: menpo_landmarks)
+      for (const unsigned int idx: landmarks)
         for (const FacePart &face_part : face.parts)
           for (auto it=face_part.landmarks.begin(), next=std::next(it); it < face_part.landmarks.end(); it++, next++)
             if (idx == (*it).feature_idx)
-            {
-              if (next != face_part.landmarks.end())
-                cv::line(image, (*it).pos, (*next).pos, green_color, thickness);
-              cv::circle(image, (*it).pos, radius, (*it).visible ? green_color : red_color, -1);
               ofs << (*it).pos.x << " " << (*it).pos.y << std::endl;
-            }
       ofs << "}" << std::endl;
       ofs.close();
-      cv::imwrite(dirpath + filepath, image);
     }
   }
 };

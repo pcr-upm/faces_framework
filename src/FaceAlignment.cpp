@@ -38,7 +38,7 @@ FaceAlignment::parseOptions
   po::options_description desc("FaceAlignment options");
   desc.add_options()
     ("measure", po::value<std::string>()->default_value("height"), "Select measure [pupils, corners, height, diagonal]")
-    ("database", po::value<std::string>()->default_value("aflw"), "Choose database [300w_public, 300w_private, cofw, aflw, wflw, ls3dw, menpo, 3dmenpo, all]");
+    ("database", po::value<std::string>()->default_value("aflw"), "Choose database [300w_public, 300w_private, cofw, aflw, wflw, ls3dw, 300wlp, menpo, 3dmenpo, all]");
   UPM_PRINT(desc);
 
   // Process the command line parameters

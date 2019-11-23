@@ -173,9 +173,7 @@ FaceAlignment::save
 {
   /// Save images with mean error greater than threshold
   float threshold = 8.0f;
-  if (_database == "menpo")
-    threshold = 0.08f;
-  else if (_database == "wflw")
+  if (_database == "wflw")
     threshold = 10.0f;
   if (_measure == ErrorMeasure::height)
     threshold = 4.0f;
@@ -227,45 +225,34 @@ FaceAlignment::save
       cv::imwrite(filepath, image);
     }
   }
-  /// Save points file
-  bool save_points = false;
-  if (save_points)
-  {
-    image = cv::imread(ann.filename, cv::IMREAD_COLOR);
-    for (const FaceAnnotation &face : faces)
-    {
-      std::size_t found;
-      if (_database == "menpo")
-        found = face.filename.substr(0,face.filename.find_last_of('/')).find_last_of('/');
-      else
-        found = face.filename.find_last_of('/');
-      std::string filepath = face.filename.substr(found+1);
-      std::vector<unsigned int> landmarks;
-      if (_database == "menpo")
-      {
-        std::string pose = filepath.substr(0,filepath.find_last_of('/'));
-        if (pose == "semifrontal")
-          landmarks = {101, 102, 103, 104, 105, 106, 107, 108, 24, 110, 111, 112, 113, 114, 115, 116, 117, 1, 119, 2, 121, 3, 4, 124, 5, 126, 6, 128, 129, 130, 17, 16, 133, 134, 135, 18, 7, 138, 139, 8, 141, 142, 11, 144, 145, 12, 147, 148, 20, 150, 151, 22, 153, 154, 21, 156, 157, 23, 159, 160, 161, 162, 163, 164, 165, 166, 167, 168};
-        else if (getHeadpose(face).x > 0.0f)
-          landmarks = {101, 102, 103, 104, 105, 106, 107, 108, 24, 110, 111, 112, 1, 119, 2, 121, 128, 129, 130, 17, 133, 16, 139, 138, 7, 142, 141, 22, 151, 150, 20, 160, 159, 23, 163, 162, 161, 168, 167};
-        else
-          landmarks = {117, 116, 115, 114, 113, 112, 111, 110, 24, 108, 107, 106, 6, 126, 5, 124, 128, 129, 130, 17, 135, 18, 144, 145, 12, 147, 148, 22, 153, 154, 21, 156, 157, 23, 163, 164, 165, 166, 167};
-      }
-      else
-        landmarks = {100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 24, 117, 118, 119, 120, 121, 122, 123, 124, 125, 126, 127, 128, 129, 130, 131, 132, 1, 134, 2, 136, 3, 138, 139, 140, 141, 4, 143, 5, 145, 6, 147, 148, 149, 150, 151, 152, 153, 17, 16, 156, 157, 158, 18, 7, 161, 9, 163, 8, 165, 10, 167, 11, 169, 13, 171, 12, 173, 14, 175, 20, 177, 178, 22, 180, 181, 21, 183, 184, 23, 186, 187, 188, 189, 190, 191, 192, 193, 194, 195, 196, 197};
-      std::ofstream ofs("output/err/points/" + filepath.substr(0,filepath.size()-3) + "pts");
-      ofs << "version: 1" << std::endl;
-      ofs << "n_points: " << landmarks.size() << std::endl;
-      ofs << "{" << std::endl;
-      for (const unsigned int idx: landmarks)
-        for (const FacePart &face_part : face.parts)
-          for (auto it=face_part.landmarks.begin(), next=std::next(it); it < face_part.landmarks.end(); it++, next++)
-            if (idx == (*it).feature_idx)
-              ofs << (*it).pos.x << " " << (*it).pos.y << std::endl;
-      ofs << "}" << std::endl;
-      ofs.close();
-    }
-  }
+//  /// Save points file
+//  if (_database == "menpo")
+//  {
+//    for (const FaceAnnotation &face : faces)
+//    {
+//      std::size_t found = face.filename.substr(0,face.filename.find_last_of('/')).find_last_of('/');
+//      std::string filepath = face.filename.substr(found+1);
+//      std::vector<unsigned int> landmarks;
+//      std::string pose = filepath.substr(0,filepath.find_last_of('/'));
+//      if (pose == "semifrontal")
+//        landmarks = {101, 102, 103, 104, 105, 106, 107, 108, 24, 110, 111, 112, 113, 114, 115, 116, 117, 1, 119, 2, 121, 3, 4, 124, 5, 126, 6, 128, 129, 130, 17, 16, 133, 134, 135, 18, 7, 138, 139, 8, 141, 142, 11, 144, 145, 12, 147, 148, 20, 150, 151, 22, 153, 154, 21, 156, 157, 23, 159, 160, 161, 162, 163, 164, 165, 166, 167, 168};
+//      else if (getHeadpose(face).x > 0.0f)
+//        landmarks = {101, 102, 103, 104, 105, 106, 107, 108, 24, 110, 111, 112, 1, 119, 2, 121, 128, 129, 130, 17, 133, 16, 139, 138, 7, 142, 141, 22, 151, 150, 20, 160, 159, 23, 163, 162, 161, 168, 167};
+//      else
+//        landmarks = {117, 116, 115, 114, 113, 112, 111, 110, 24, 108, 107, 106, 6, 126, 5, 124, 128, 129, 130, 17, 135, 18, 144, 145, 12, 147, 148, 22, 153, 154, 21, 156, 157, 23, 163, 164, 165, 166, 167};
+//      std::ofstream ofs("output/err/points/" + filepath.substr(0,filepath.size()-3) + "pts");
+//      ofs << "version: 1" << std::endl;
+//      ofs << "n_points: " << landmarks.size() << std::endl;
+//      ofs << "{" << std::endl;
+//      for (const unsigned int idx: landmarks)
+//        for (const FacePart &face_part : face.parts)
+//          for (auto it=face_part.landmarks.begin(), next=std::next(it); it < face_part.landmarks.end(); it++, next++)
+//            if (idx == (*it).feature_idx)
+//              ofs << (*it).pos.x << " " << (*it).pos.y << std::endl;
+//      ofs << "}" << std::endl;
+//      ofs.close();
+//    }
+//  }
 };
 
 } // namespace upm

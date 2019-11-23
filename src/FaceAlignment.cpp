@@ -178,7 +178,7 @@ FaceAlignment::save
   if (_measure == ErrorMeasure::height)
     threshold = 4.0f;
   if (_measure == ErrorMeasure::diagonal)
-    threshold = 2.0f;
+    threshold = 3.0f;
   const int radius = MAX(static_cast<int>(roundf(ann.bbox.pos.height*0.01f)), 3);
   const int thickness = MAX(static_cast<int>(roundf(ann.bbox.pos.height*0.005f)), 2);
   cv::Scalar cyan_color(255,122,0), blue_color(255,0,0), green_color(0,255,0), red_color(0,0,255);

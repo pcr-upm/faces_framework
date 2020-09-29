@@ -84,11 +84,11 @@ FaceAlignment::show
     for (auto it=ann_part.landmarks.begin(), next=std::next(it); it < ann_part.landmarks.end(); it++, next++)
     {
       if (next != ann_part.landmarks.end())
-        if ((*it).visible or (*next).visible)
+        if (((*it).occluded < 0.5f) or ((*next).occluded < 0.5f))
           viewer->line((*it).pos.x, (*it).pos.y, (*next).pos.x, (*next).pos.y, thickness, cyan_color);
         else
           viewer->line((*it).pos.x, (*it).pos.y, (*next).pos.x, (*next).pos.y, thickness, blue_color);
-      viewer->circle((*it).pos.x, (*it).pos.y, radius, -1, (*it).visible ? cyan_color : blue_color);
+      viewer->circle((*it).pos.x, (*it).pos.y, radius, -1, ((*it).occluded < 0.5f) ? cyan_color : blue_color);
     }
 
   /// Detected landmarks
@@ -98,11 +98,11 @@ FaceAlignment::show
       for (auto it=face_part.landmarks.begin(), next=std::next(it); it < face_part.landmarks.end(); it++, next++)
       {
         if (next != face_part.landmarks.end())
-          if ((*it).visible or (*next).visible)
+          if (((*it).occluded < 0.5f) or ((*next).occluded < 0.5f))
             viewer->line((*it).pos.x, (*it).pos.y, (*next).pos.x, (*next).pos.y, thickness, green_color);
           else
             viewer->line((*it).pos.x, (*it).pos.y, (*next).pos.x, (*next).pos.y, thickness, red_color);
-        viewer->circle((*it).pos.x, (*it).pos.y, radius, -1, (*it).visible ? green_color : red_color);
+        viewer->circle((*it).pos.x, (*it).pos.y, radius, -1, ((*it).occluded < 0.5f) ? green_color : red_color);
       }
 };
 
@@ -124,32 +124,35 @@ FaceAlignment::evaluate
   )
 {
   /// Estimate normalized error and occlusion for each visible landmark
-  unsigned int tp = 0, fp = 0, fn = 0, tn = 0;
   for (const FaceAnnotation &face : faces)
   {
     *output << getComponentClass() << " " << ann.filename;
-    for (const FacePart &face_part : face.parts)
-      for (const FaceLandmark &face_landmark : face_part.landmarks)
-      {
-        unsigned int idx = face_landmark.feature_idx;
-        bool is_visible = false;
-        for (const FacePart &ann_part : ann.parts)
-        {
-          auto found = std::find_if(ann_part.landmarks.begin(), ann_part.landmarks.end(), [&idx](const FaceLandmark &obj){return obj.feature_idx == idx;});
-          if (found != ann_part.landmarks.end())
-          {
-            is_visible = (*found).visible;
-            break;
-          }
-        }
-        not face_landmark.visible ? not is_visible ? tp++ : fp++ : not is_visible ? fn++ : tn++;
-      }
-    *output << " " << tp << " " << fp << " " << fn << " " << tn;
     std::vector<unsigned int> indices;
     std::vector<float> errors;
     getNormalizedErrors(face, ann, _measure, indices, errors);
-    for (unsigned int j=0; j < errors.size(); j++)
-      *output << " " << indices[j] << " " << errors[j];
+    for (unsigned int j=0; j < indices.size(); j++)
+    {
+      unsigned int idx = indices[j];
+      *output << " " << idx << " " << errors[j];
+      for (const FacePart &ann_part : ann.parts)
+      {
+        auto found = std::find_if(ann_part.landmarks.begin(), ann_part.landmarks.end(), [&idx](const FaceLandmark &obj){return obj.feature_idx == idx;});
+        if (found != ann_part.landmarks.end())
+        {
+          *output << " " << (*found).occluded;
+          break;
+        }
+      }
+      for (const FacePart &face_part : face.parts)
+      {
+        auto found = std::find_if(face_part.landmarks.begin(), face_part.landmarks.end(), [&idx](const FaceLandmark &obj){return obj.feature_idx == idx;});
+        if (found != face_part.landmarks.end())
+        {
+          *output << " " << (*found).occluded;
+          break;
+        }
+      }
+    }
     *output << std::endl;
   }
 };
@@ -187,11 +190,11 @@ FaceAlignment::save
     for (auto it=ann_part.landmarks.begin(), next=std::next(it); it < ann_part.landmarks.end(); it++, next++)
     {
       if (next != ann_part.landmarks.end())
-        if ((*it).visible or (*next).visible)
+        if (((*it).occluded < 0.5f) or ((*next).occluded < 0.5f))
           cv::line(image, (*it).pos, (*next).pos, cyan_color, thickness);
         else
           cv::line(image, (*it).pos, (*next).pos, blue_color, thickness);
-      cv::circle(image, (*it).pos, radius, (*it).visible ? cyan_color : blue_color, -1);
+      cv::circle(image, (*it).pos, radius, ((*it).occluded < 0.5f) ? cyan_color : blue_color, -1);
     }
   for (const FaceAnnotation &face : faces)
   {
@@ -199,11 +202,11 @@ FaceAlignment::save
       for (auto it=face_part.landmarks.begin(), next=std::next(it); it < face_part.landmarks.end(); it++, next++)
       {
         if (next != face_part.landmarks.end())
-          if ((*it).visible or (*next).visible)
+          if (((*it).occluded < 0.5f) or ((*next).occluded < 0.5f))
             cv::line(image, (*it).pos, (*next).pos, green_color, thickness);
           else
             cv::line(image, (*it).pos, (*next).pos, red_color, thickness);
-        cv::circle(image, (*it).pos, radius, (*it).visible ? green_color : red_color, -1);
+        cv::circle(image, (*it).pos, radius, ((*it).occluded < 0.5f) ? green_color : red_color, -1);
       }
     std::vector<unsigned int> indices;
     std::vector<float> errors;

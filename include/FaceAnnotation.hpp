@@ -33,11 +33,11 @@ struct FaceLandmark
 {
   bool operator==(const FaceLandmark &src) const
   {
-    return ((feature_idx==src.feature_idx) and (pos==src.pos) and (visible==src.visible));
+    return ((feature_idx==src.feature_idx) and (pos==src.pos) and (occluded==src.occluded));
   };
   unsigned int feature_idx;
   cv::Point2f pos;
-  bool visible;
+  float occluded;
 };
 
 enum FacePartLabel { leyebrow, reyebrow, leye, reye, nose, tmouth, bmouth, lear, rear, chin };
@@ -63,6 +63,7 @@ struct FaceAttribute
   float hat;
   float moustache;
   float beard;
+  float fake;
 };
 
 /** ****************************************************************************
@@ -74,10 +75,10 @@ class FaceAnnotation
 public:
   FaceAnnotation() :
     filename(""),
-    bbox({0,cv::Rect(-1.0f,-1.0f,-1.0f,-1.0f),0.0f}),
+    bbox({0,cv::Rect_<float>(-1.0f,-1.0f,-1.0f,-1.0f),0.0f}),
     headpose(cv::Point3f(-FLT_MAX,-FLT_MAX,-FLT_MAX)),
     parts({{leyebrow,{}}, {reyebrow,{}}, {leye,{}}, {reye,{}}, {nose,{}}, {tmouth,{}}, {bmouth,{}}, {lear,{}}, {rear,{}}, {chin,{}}}),
-    attribute({0.0f,0.0f,0.0f,0.0f,0.0f,0.0f}) {};
+    attribute({0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,0.0f}) {};
 
   std::string filename;
   FaceBox bbox;

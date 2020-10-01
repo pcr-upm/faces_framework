@@ -10,6 +10,7 @@
 // ----------------------- INCLUDES --------------------------------------------
 #include <FaceHeadPose.hpp>
 #include <ModernPosit.h>
+#include <boost/filesystem.hpp>
 
 namespace upm {
 
@@ -143,13 +144,20 @@ FaceHeadPose::save
     cv::line(image, mid, cv::Point2f(mid.x+face_axis.at<float>(1,2), mid.y-face_axis.at<float>(0,2)), salmon_color, thickness);
 
     // Absolute head-pose error
-    float error = static_cast<float>(cv::sum(cv::Mat(ann.headpose-face.headpose))[0]);
+    float error = static_cast<float>(cv::sum(cv::abs(cv::Mat(ann.headpose-face.headpose).t()))[0]);
     std::string text = std::to_string(error);
     cv::putText(image, text, cv::Point(10, image.rows-10), cv::FONT_HERSHEY_SIMPLEX, 1, red_color);
     if (error > threshold)
     {
       std::size_t found = face.filename.find_last_of('/');
-      std::string filepath = dirpath + face.filename.substr(found+1);
+      std::string filepath;
+      unsigned int num = 0;
+      do
+      {
+        filepath = dirpath + std::to_string(num) + "_" + face.filename.substr(found+1);
+        num++;
+      }
+      while (boost::filesystem::exists(filepath));
       cv::imwrite(filepath, image);
     }
   }

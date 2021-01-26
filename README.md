@@ -1,7 +1,7 @@
 # Framework for face detection, head-pose estimation, face alignment and face recognition
 
 A simple C++ framework.
-Copyright (c) 2015-2018 Roberto Valle (bobetocalo@gmail.com)
+Copyright (c) 2015-2021 Roberto Valle (bobetocalo@gmail.com)
 
 #### Requisites
 - OpenCV (>=3.3.1)

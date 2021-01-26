@@ -96,12 +96,8 @@ FaceHeadPose::evaluate
   const upm::FaceAnnotation &ann
   )
 {
-  // Absolute head-pose error
   for (const FaceAnnotation &face : faces)
-  {
-    cv::Point3f err = ann.headpose-face.headpose;
-    *output << getComponentClass() << " " << ann.filename << " " << ann.headpose << " " << face.headpose << " " << cv::abs(cv::Mat(err).t()) << std::endl;
-  }
+    *output << getComponentClass() << " " << ann.filename << " " << ann.headpose << " " << face.headpose << std::endl;
 };
 
 // -----------------------------------------------------------------------------

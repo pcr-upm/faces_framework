@@ -34,3 +34,6 @@
 [submodule "alignment/bobetocalo_prl19"]
 	path = alignment/bobetocalo_prl19
 	url = git@github.com:bobetocalo/bobetocalo_prl19.git
+[submodule "multitask/bobetocalo_pami20"]
+	path = multitask/bobetocalo_pami20
+	url = git@github.com:bobetocalo/bobetocalo_pami20.git
